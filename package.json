@@ -4,7 +4,8 @@
   "private": false,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "if [ \"$OPENNEXT_INTERNAL_BUILD\" = \"1\" ]; then next build; else OPENNEXT_INTERNAL_BUILD=1 opennextjs-cloudflare build; fi",
+    "build:next": "next build",
     "test": "vitest",
     "test:run": "vitest run",
     "verify": "bash scripts/verify.sh full",
