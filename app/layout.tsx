@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 import { ToastProvider } from "@/components/Toast";
@@ -165,6 +166,12 @@ export default async function RootLayout({
           <style dangerouslySetInnerHTML={{ __html: `:root { --body-font: ${font.family}; }` }} />
         )}
         <script dangerouslySetInnerHTML={{ __html: appearanceApplyScript }} />
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="66b435e0-5ca6-4001-9716-7faa4760ca9d"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <ToastProvider>
