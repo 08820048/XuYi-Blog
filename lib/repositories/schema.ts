@@ -30,6 +30,28 @@ export async function ensureSchema(db: Database) {
         // column already exists
       }
     }
+
+    try {
+      await db.prepare(`
+        CREATE TABLE IF NOT EXISTS friend_links (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          url TEXT NOT NULL,
+          description TEXT NOT NULL DEFAULT '',
+          avatar_url TEXT,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          is_visible INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+          updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        )
+      `).run()
+      await db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_friend_links_visible_order ON friend_links(is_visible, sort_order, id)'
+      ).run()
+    } catch {
+      // table already exists or current DB runtime does not allow this migration
+    }
+
     schemaInitialized = true
   } catch (error: unknown) {
     console.error('Schema migration failed:', error)

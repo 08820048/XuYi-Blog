@@ -37,6 +37,18 @@ export interface CategoryRow {
   post_count: number
 }
 
+export interface FriendLinkRow {
+  id: number
+  name: string
+  url: string
+  description: string
+  avatar_url: string | null
+  sort_order: number
+  is_visible: number
+  created_at: number
+  updated_at: number
+}
+
 export interface SettingRow {
   value: string
 }

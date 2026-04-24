@@ -1,5 +1,5 @@
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
-import { getSetting, getCategories } from '@/lib/db'
+import { getSetting, getCategories, getFriendLinks } from '@/lib/db'
 import { detectRuntimeCapabilities } from '@/lib/runtime-capabilities'
 import { SettingsManager } from './SettingsManager'
 
@@ -11,6 +11,7 @@ export default async function SettingsPage() {
   let bodyFont = ''
   let defaultTheme = ''
   let categories: Awaited<ReturnType<typeof getCategories>> = []
+  let friendLinks: Awaited<ReturnType<typeof getFriendLinks>> = []
   let runtimeCapabilities = detectRuntimeCapabilities()
 
   try {
@@ -21,7 +22,10 @@ export default async function SettingsPage() {
       customJs = (await getSetting(env.DB, 'custom_js')) || ''
       bodyFont = (await getSetting(env.DB, 'body_font')) || ''
       defaultTheme = (await getSetting(env.DB, 'default_theme')) || ''
-      categories = await getCategories(env.DB)
+      ;[categories, friendLinks] = await Promise.all([
+        getCategories(env.DB),
+        getFriendLinks(env.DB),
+      ])
     }
   } catch {}
 
@@ -37,6 +41,7 @@ export default async function SettingsPage() {
         initialNavLinks={navLinks}
         initialCustomJs={customJs}
         initialCategories={categories}
+        initialFriendLinks={friendLinks}
         initialBodyFont={bodyFont}
         initialDefaultTheme={defaultTheme}
         initialRuntimeCapabilities={runtimeCapabilities}

@@ -56,6 +56,21 @@ CREATE TABLE categories (
   post_count INTEGER DEFAULT 0
 );
 
+-- 友联表
+CREATE TABLE friend_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  url TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  avatar_url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_visible INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE INDEX idx_friend_links_visible_order ON friend_links(is_visible, sort_order, id);
+
 -- 站点设置表
 CREATE TABLE site_settings (
   key TEXT PRIMARY KEY,

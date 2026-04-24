@@ -9,6 +9,7 @@ import { CustomJsEditor } from './CustomJsEditor'
 import { ApiTokensManager } from './ApiTokensManager'
 import { ThemeManager } from './ThemeManager'
 import { CategoryManager } from '../categories/CategoryManager'
+import { FriendLinksManager } from '../friend-links/FriendLinksManager'
 import { AiProviderManager } from './AiProviderManager'
 import { AiActionsManager } from './AiActionsManager'
 import { AiImageProviderManager } from './AiImageProviderManager'
@@ -22,10 +23,23 @@ interface Category {
   post_count: number
 }
 
+interface FriendLink {
+  id: number
+  name: string
+  url: string
+  description: string
+  avatar_url: string | null
+  sort_order: number
+  is_visible: number
+  created_at: number
+  updated_at: number
+}
+
 interface Props {
   initialNavLinks: string
   initialCustomJs: string
   initialCategories: Category[]
+  initialFriendLinks: FriendLink[]
   initialBodyFont: string
   initialDefaultTheme: string
   initialRuntimeCapabilities: RuntimeCapabilities
@@ -35,6 +49,7 @@ export function SettingsManager({
   initialNavLinks,
   initialCustomJs,
   initialCategories,
+  initialFriendLinks,
   initialBodyFont,
   initialDefaultTheme,
   initialRuntimeCapabilities,
@@ -105,6 +120,11 @@ export function SettingsManager({
       id: 'categories',
       label: '分类设置',
       content: <CategoryManager initialCategories={initialCategories} />,
+    },
+    {
+      id: 'friend-links',
+      label: '友联设置',
+      content: <FriendLinksManager initialLinks={initialFriendLinks} />,
     },
     {
       id: 'code',

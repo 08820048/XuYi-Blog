@@ -23,6 +23,7 @@ XuYi'Blog 是基于开源项目 [qiaomu-blog-opensource](https://github.com/joes
 
 - 前台博客首页、文章详情、分类页、搜索页。
 - 后台管理文章、分类、站点设置、主题、导航、API Token。
+- 后台管理友联，并在前台提供独立的友联页面。
 - Novel / Tiptap 富文本编辑器。
 - 支持代码块、数学公式、表格、图片、音频、视频、YouTube、Twitter/X 嵌入。
 - 支持文章草稿、公开发布、密码访问、隐藏文章。

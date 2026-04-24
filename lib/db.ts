@@ -3,6 +3,7 @@ export {
   isPubliclyAccessiblePost,
   type CategoryRow,
   type CountRow,
+  type FriendLinkRow,
   type Post,
   type PostAiSnapshotRow,
   type PostCategoryRow,
@@ -35,4 +36,12 @@ export {
   getPublicCategories,
   updateCategory,
 } from '@/lib/repositories/categories'
+export {
+  createFriendLink,
+  deleteFriendLink,
+  getFriendLinks,
+  getPublicFriendLinks,
+  updateFriendLink,
+  type FriendLinkInput,
+} from '@/lib/repositories/friend-links'
 export { getSetting, setSetting } from '@/lib/repositories/settings'
