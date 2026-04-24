@@ -8,6 +8,7 @@ export const metadata = { title: '站点设置' }
 export default async function SettingsPage() {
   let navLinks = ''
   let customJs = ''
+  let aboutMarkdown = ''
   let bodyFont = ''
   let defaultTheme = ''
   let categories: Awaited<ReturnType<typeof getCategories>> = []
@@ -20,6 +21,7 @@ export default async function SettingsPage() {
     if (env?.DB) {
       navLinks = (await getSetting(env.DB, 'nav_links')) || ''
       customJs = (await getSetting(env.DB, 'custom_js')) || ''
+      aboutMarkdown = (await getSetting(env.DB, 'about_markdown')) || ''
       bodyFont = (await getSetting(env.DB, 'body_font')) || ''
       defaultTheme = (await getSetting(env.DB, 'default_theme')) || ''
       ;[categories, friendLinks] = await Promise.all([
@@ -40,6 +42,7 @@ export default async function SettingsPage() {
       <SettingsManager
         initialNavLinks={navLinks}
         initialCustomJs={customJs}
+        initialAboutMarkdown={aboutMarkdown}
         initialCategories={categories}
         initialFriendLinks={friendLinks}
         initialBodyFont={bodyFont}

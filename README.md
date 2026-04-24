@@ -15,6 +15,7 @@ XuYi'Blog 是基于开源项目 [qiaomu-blog-opensource](https://github.com/joes
 - 新增文章详情页代码块高亮，支持常见代码语言自动识别。
 - 新增编辑器代码块高亮能力，让写作时也能看到更接近前台的代码展示效果。
 - 新增数学公式支持，粘贴 `$...$` / `$$...$$` 形式的 LaTeX 内容后可在编辑器和前台详情页渲染。
+- 新增可配置“关于我”页面，后台填写 Markdown，前台独立渲染。
 - 调整本地开发配置，避免本地启动时强依赖 Cloudflare 远程绑定。
 - 初始化线上 D1 表结构和默认设置，补齐后台登录所需 secret。
 - 支持 DeepSeek 作为默认文本 AI provider，并将摘要、标签、slug 生成切换到 DeepSeek profile。
@@ -24,6 +25,7 @@ XuYi'Blog 是基于开源项目 [qiaomu-blog-opensource](https://github.com/joes
 - 前台博客首页、文章详情、分类页、搜索页。
 - 后台管理文章、分类、站点设置、主题、导航、API Token。
 - 后台管理友联，并在前台提供独立的友联页面。
+- 后台配置“关于我”Markdown，并在前台提供 `/about` 页面。
 - Novel / Tiptap 富文本编辑器。
 - 支持代码块、数学公式、表格、图片、音频、视频、YouTube、Twitter/X 嵌入。
 - 支持文章草稿、公开发布、密码访问、隐藏文章。

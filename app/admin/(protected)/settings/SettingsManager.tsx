@@ -8,6 +8,7 @@ import { NavLinksEditor } from './NavLinksEditor'
 import { CustomJsEditor } from './CustomJsEditor'
 import { ApiTokensManager } from './ApiTokensManager'
 import { ThemeManager } from './ThemeManager'
+import { AboutMarkdownEditor } from './AboutMarkdownEditor'
 import { CategoryManager } from '../categories/CategoryManager'
 import { FriendLinksManager } from '../friend-links/FriendLinksManager'
 import { AiProviderManager } from './AiProviderManager'
@@ -38,6 +39,7 @@ interface FriendLink {
 interface Props {
   initialNavLinks: string
   initialCustomJs: string
+  initialAboutMarkdown: string
   initialCategories: Category[]
   initialFriendLinks: FriendLink[]
   initialBodyFont: string
@@ -48,6 +50,7 @@ interface Props {
 export function SettingsManager({
   initialNavLinks,
   initialCustomJs,
+  initialAboutMarkdown,
   initialCategories,
   initialFriendLinks,
   initialBodyFont,
@@ -125,6 +128,24 @@ export function SettingsManager({
       id: 'friend-links',
       label: '友联设置',
       content: <FriendLinksManager initialLinks={initialFriendLinks} />,
+    },
+    {
+      id: 'about',
+      label: '关于我',
+      content: (
+        <div className="space-y-4">
+          {msg && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+              {msg}
+            </div>
+          )}
+          <AboutMarkdownEditor
+            initialValue={initialAboutMarkdown}
+            onSave={(val) => save('about_markdown', val)}
+            saving={saving}
+          />
+        </div>
+      ),
     },
     {
       id: 'code',

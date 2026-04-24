@@ -16,6 +16,7 @@ interface Props {
 
 const defaultLinks: NavLink[] = [
   { label: 'GitHub', url: 'https://github.com/08820048/XuYi-Blog', openInNewTab: true },
+  { label: '关于我', url: '/about', openInNewTab: false },
   { label: '友联', url: '/links', openInNewTab: false },
   { label: 'RSS', url: '/feed.xml', openInNewTab: false },
 ]

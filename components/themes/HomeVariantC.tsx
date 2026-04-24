@@ -34,8 +34,9 @@ function TerminalHeader({
   navLinks: SiteNavLink[]
 }) {
   const defaultLinks = [
-    { label: '~/github', url: 'https://github.com/joeseesun/', openInNewTab: true },
-    { label: '~/twitter', url: 'https://x.com/vista8/', openInNewTab: true },
+    { label: '~/github', url: 'https://github.com/08820048/XuYi-Blog', openInNewTab: true },
+    { label: '~/about', url: '/about', openInNewTab: false },
+    { label: '~/links', url: '/links', openInNewTab: false },
     { label: '~/rss', url: '/feed.xml', openInNewTab: false },
   ]
   const links = navLinks.length > 0
