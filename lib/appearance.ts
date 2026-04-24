@@ -1,4 +1,6 @@
 export const THEME_STORAGE_KEY = 'qm_site_theme'
+export const THEME_COOKIE_NAME = 'qm_site_theme'
+export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 export const THEME_CHANGE_EVENT = 'qm-theme-change'
 
 export const THEME_OPTIONS = [
@@ -86,6 +88,12 @@ export function getClientThemePreference(fallback: Theme): Theme {
   if (isTheme(attr)) return attr
 
   return fallback
+}
+
+export function persistThemeCookie(theme: Theme) {
+  if (typeof document === 'undefined') return
+
+  document.cookie = `${THEME_COOKIE_NAME}=${encodeURIComponent(theme)}; path=/; max-age=${THEME_COOKIE_MAX_AGE}; samesite=lax`
 }
 
 export function subscribeToThemeChange(onStoreChange: () => void): () => void {

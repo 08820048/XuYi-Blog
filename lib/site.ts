@@ -1,4 +1,5 @@
-import { normalizeTheme, type Theme } from '@/lib/appearance'
+import { cookies } from 'next/headers'
+import { THEME_COOKIE_NAME, isTheme, normalizeTheme, type Theme } from '@/lib/appearance'
 import { getPublicCategories, getSetting } from '@/lib/db'
 
 export interface SiteNavLink {
@@ -48,6 +49,13 @@ export async function getSiteHeaderData(db: D1Database): Promise<{
   } catch {
     // Keep graceful fallback behavior for public pages
   }
+
+  try {
+    const themeCookie = (await cookies()).get(THEME_COOKIE_NAME)?.value
+    if (isTheme(themeCookie)) {
+      defaultTheme = themeCookie
+    }
+  } catch {}
 
   return { navLinks, categories, defaultTheme }
 }

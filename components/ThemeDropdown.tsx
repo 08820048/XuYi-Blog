@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import { ChevronDown } from 'lucide-react'
 import {
   getClientThemePreference,
+  persistThemeCookie,
   subscribeToThemeChange,
   THEME_CHANGE_EVENT,
   THEME_OPTIONS,
@@ -60,6 +61,7 @@ export function ThemeDropdown({
   const handleChange = (t: Theme) => {
     setOpen(false)
     localStorage.setItem(THEME_STORAGE_KEY, t)
+    persistThemeCookie(t)
     // Update data-theme on <html>
     if (t === 'default') {
       document.documentElement.removeAttribute('data-theme')

@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 import { ToastProvider } from "@/components/Toast";
 import { CustomJsInjector } from "@/components/CustomJsInjector";
-import { FONT_CONFIG, THEME_OPTIONS, THEME_STORAGE_KEY, normalizeTheme } from "@/lib/appearance";
+import {
+  FONT_CONFIG,
+  THEME_COOKIE_MAX_AGE,
+  THEME_COOKIE_NAME,
+  THEME_OPTIONS,
+  THEME_STORAGE_KEY,
+  isTheme,
+  normalizeTheme,
+  type Theme,
+} from "@/lib/appearance";
 import { getAppCloudflareEnv } from "@/lib/cloudflare";
 import { getSetting } from "@/lib/db";
 import { getSiteUrl, getSiteUrlObject } from "@/lib/site-config";
@@ -92,7 +102,7 @@ export default async function RootLayout({
 }>) {
   let customJs = ''
   let bodyFont = ''
-  let defaultTheme = 'default'
+  let defaultTheme: Theme = 'default'
   try {
     const env = await getAppCloudflareEnv()
     if (env?.DB) {
@@ -107,6 +117,14 @@ export default async function RootLayout({
     }
   } catch {}
 
+  let appliedTheme = defaultTheme
+  try {
+    const themeCookie = (await cookies()).get(THEME_COOKIE_NAME)?.value
+    if (isTheme(themeCookie)) {
+      appliedTheme = themeCookie
+    }
+  } catch {}
+
   const font = FONT_CONFIG[bodyFont]
   const validThemes = THEME_OPTIONS.map((theme) => theme.id)
 
@@ -114,8 +132,10 @@ export default async function RootLayout({
 (function(){
   var f = ${JSON.stringify(FONT_CONFIG)};
   var k = "${bodyFont || ''}";
-  var defaultTheme = "${defaultTheme}";
+  var defaultTheme = "${appliedTheme}";
   var themeStorageKey = "${THEME_STORAGE_KEY}";
+  var themeCookieName = "${THEME_COOKIE_NAME}";
+  var themeCookieMaxAge = ${THEME_COOKIE_MAX_AGE};
   var validThemes = ${JSON.stringify(validThemes)};
   function isTheme(value) {
     return validThemes.indexOf(value) !== -1;
@@ -147,7 +167,10 @@ export default async function RootLayout({
   applyTheme(defaultTheme);
   try {
     var savedTheme = window.localStorage.getItem(themeStorageKey);
-    if (isTheme(savedTheme)) applyTheme(savedTheme);
+    if (isTheme(savedTheme)) {
+      applyTheme(savedTheme);
+      document.cookie = themeCookieName + '=' + encodeURIComponent(savedTheme) + '; path=/; max-age=' + themeCookieMaxAge + '; samesite=lax';
+    }
   } catch (e) {}
 })();
 `
@@ -157,7 +180,7 @@ export default async function RootLayout({
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-font={bodyFont || 'default'}
-      data-theme={defaultTheme !== 'default' ? defaultTheme : undefined}
+      data-theme={appliedTheme !== 'default' ? appliedTheme : undefined}
       suppressHydrationWarning
     >
       <head>
