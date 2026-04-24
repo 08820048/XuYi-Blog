@@ -892,6 +892,60 @@ body {
   border-bottom-style: dashed !important;
 }
 
+/* 滚动时让顶部左右两组菜单逐步靠向屏幕两侧，文章详情页会直接展开。 */
+.site-header .site-header-inner {
+  --site-header-spread-progress: 0;
+  --site-header-base-width: 48rem;
+  --site-header-side-padding: calc(1rem + 2rem * var(--site-header-spread-progress));
+  --site-header-spread-distance: calc(clamp(0px, 1.6vw, 24px) * var(--site-header-spread-progress));
+  width: min(100%, calc(var(--site-header-base-width) + (100vw - var(--site-header-base-width)) * var(--site-header-spread-progress)));
+  max-width: none;
+  padding-left: var(--site-header-side-padding);
+  padding-right: var(--site-header-side-padding);
+  transition:
+    width 0.28s ease,
+    padding-left 0.28s ease,
+    padding-right 0.28s ease;
+}
+
+[data-theme="refined"] .site-header .site-header-inner,
+[data-theme="terminal"] .site-header .site-header-inner {
+  --site-header-base-width: 860px;
+}
+
+[data-theme="editorial"] .site-header .site-header-inner {
+  --site-header-base-width: 100vw;
+}
+
+.site-header-primary,
+.site-header-secondary {
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.28s ease;
+}
+
+@media (min-width: 640px) {
+  .site-header-primary {
+    transform: translate3d(calc(var(--site-header-spread-distance) * -1), 0, 0);
+  }
+
+  .site-header-secondary {
+    transform: translate3d(var(--site-header-spread-distance), 0, 0);
+  }
+}
+
+@media (max-width: 639px) {
+  .site-header .site-header-inner {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .site-header-primary,
+  .site-header-secondary {
+    transform: none;
+  }
+}
+
 /* 杂志编辑 & AI终端：header 导航等宽字体 */
 [data-theme="editorial"] .site-header nav,
 [data-theme="terminal"] .site-header nav {
