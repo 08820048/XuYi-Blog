@@ -2,6 +2,11 @@
 
 import { useEffect } from 'react'
 import hljs from 'highlight.js'
+import groovy from 'highlight.js/lib/languages/groovy'
+
+if (!hljs.getLanguage('groovy')) {
+  hljs.registerLanguage('groovy', groovy)
+}
 
 export function CodeHighlightEnhancer({
   containerId,

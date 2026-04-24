@@ -35,6 +35,7 @@ import { Markdown } from 'tiptap-markdown'
 import { DOMParser as PMDOMParser } from '@tiptap/pm/model'
 import type { EditorView } from '@tiptap/pm/view'
 import markdownit from 'markdown-it'
+import groovy from 'highlight.js/lib/languages/groovy'
 import { common, createLowlight } from 'lowlight'
 import { useEffect, useState } from 'react'
 import {
@@ -80,6 +81,7 @@ import { containsMathSyntax, transformHtmlMathDelimiters } from './math-html'
 
 const md = markdownit({ html: true })
 const lowlight = createLowlight(common)
+lowlight.register({ groovy })
 
 function CommandIcon({ label }: { label: string }) {
   return (
