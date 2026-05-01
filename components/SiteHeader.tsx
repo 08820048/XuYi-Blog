@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useRef, useEffect, useSyncExternalStore, type CSSProperties } from 'react'
 import { Menu, X, ChevronDown } from 'lucide-react'
@@ -29,6 +30,18 @@ const defaultNavLinks: NavLink[] = [
 function getIssueInfo() {
   const now = new Date()
   return { vol: now.getFullYear() - 2023, month: now.getMonth() + 1, year: now.getFullYear() }
+}
+
+function LogoImage({ className = '' }: { className?: string }) {
+  return (
+    <Image
+      src="/logo.jpg"
+      alt="XuYi'Blog"
+      width={32}
+      height={32}
+      className={`site-logo-image ${className}`}
+    />
+  )
 }
 
 export function SiteHeader({
@@ -134,7 +147,7 @@ export function SiteHeader({
           style={{ fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: 13 }}
           suppressHydrationWarning
         >
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 8px #4ade80', flexShrink: 0 }} />
+          <LogoImage className="site-logo-image--terminal" />
           <span style={{ color: 'var(--editor-muted)' }}>xuyi@blog:~$</span>
           <span style={{ color: 'var(--editor-ink)' }}>./home</span>
         </Link>
@@ -147,10 +160,10 @@ export function SiteHeader({
         <div className="flex items-baseline gap-4 flex-shrink-0" suppressHydrationWarning>
           <Link
             href="/"
-            className="text-lg tracking-tight text-[var(--editor-ink)] hover:text-[var(--editor-accent)] transition-colors duration-200 font-bold"
-            style={{ fontFamily: 'var(--logo-font, "Noto Serif SC", Georgia, serif)' }}
+            className="site-logo-link transition-transform duration-200 hover:scale-105"
+            aria-label="返回首页"
           >
-            XuYi
+            <LogoImage />
           </Link>
           <span style={{ fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: 11, letterSpacing: '0.15em', color: 'var(--editor-muted)' }}>
             VOL.{vol} · {year}年{month}月
@@ -162,10 +175,10 @@ export function SiteHeader({
     return (
       <Link
         href="/"
-        className="text-lg tracking-tight text-[var(--editor-ink)] hover:text-[var(--editor-accent)] transition-colors duration-200 flex-shrink-0 font-bold"
-        style={{ fontFamily: 'var(--logo-font, Georgia, "Noto Serif SC", serif)' }}
+        className="site-logo-link transition-transform duration-200 hover:scale-105"
+        aria-label="返回首页"
       >
-        XuYi
+        <LogoImage />
       </Link>
     )
   }

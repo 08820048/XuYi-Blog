@@ -3,6 +3,7 @@
 // Variant C: AI 终端 — dark-first, monospace, terminal aesthetic
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SearchEntry } from '@/components/SearchEntry'
@@ -55,7 +56,13 @@ function TerminalHeader({
     }}>
       {/* Left: terminal prompt */}
       <div className="terminal-home-prompt" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{ width: 10, height: 10, borderRadius: '50%', background: ACCENT, display: 'inline-block', boxShadow: `0 0 10px ${ACCENT}` }} />
+        <Image
+          src="/logo.jpg"
+          alt="XuYi'Blog"
+          width={28}
+          height={28}
+          className="site-logo-image site-logo-image--terminal"
+        />
         <Link href="/" style={{ color: MUTED, textDecoration: 'none' }}>xuyi@blog:~$</Link>
         <span style={{ color: FG }}>./serve --port=443</span>
       </div>

@@ -74,6 +74,28 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+.site-logo-link {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.site-logo-image {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.site-logo-image--terminal {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 6px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--editor-accent) 36%, transparent);
+}
+
 .route-transition {
   pointer-events: none;
   position: fixed;

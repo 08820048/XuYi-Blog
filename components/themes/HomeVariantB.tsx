@@ -4,6 +4,7 @@
 // Giant serif masthead, featured headline, numbered article grid
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SearchEntry } from '@/components/SearchEntry'
@@ -53,16 +54,18 @@ function EditorialNavBar({
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-    }}>
-      <div style={{
-        fontSize: 11,
-        letterSpacing: '0.2em',
-        color: MUTED,
-        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
-        textTransform: 'uppercase',
       }}>
-        VOL. {vol} · {year}年{month}月
-      </div>
+      <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: MUTED, textDecoration: 'none' }}>
+        <Image src="/logo.jpg" alt="XuYi'Blog" width={32} height={32} className="site-logo-image" />
+        <span style={{
+          fontSize: 11,
+          letterSpacing: '0.2em',
+          fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+          textTransform: 'uppercase',
+        }}>
+          VOL. {vol} · {year}年{month}月
+        </span>
+      </Link>
       <nav className="editorial-nav-links" style={{ display: 'flex', gap: 20, alignItems: 'center', fontSize: 12, letterSpacing: '0.08em', fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>
         <Link href="/" style={{ color: FG, textDecoration: 'none' }}>首页</Link>
         {links.map(link => (
@@ -117,18 +120,21 @@ export function HomeVariantB({
 
       {/* Giant masthead */}
       <div className="editorial-masthead" style={{ padding: '36px 48px 20px', borderBottom: `1px solid ${BORDER}` }}>
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <h1 className="editorial-masthead-title" style={{
-            margin: 0,
-            fontSize: 'clamp(72px, 12vw, 180px)',
-            fontWeight: 900,
-            lineHeight: 0.88,
-            letterSpacing: '-0.04em',
-            fontFamily: '"Noto Serif SC", "Source Han Serif SC", Georgia, serif',
-            color: FG,
-          }}>
-            XuYi&apos;<span style={{ color: ACCENT }}>·</span>Blog
-          </h1>
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
+          <Image
+            src="/logo.jpg"
+            alt="XuYi'Blog"
+            width={160}
+            height={160}
+            className="editorial-masthead-logo"
+            style={{
+              width: 'clamp(96px, 14vw, 180px)',
+              height: 'clamp(96px, 14vw, 180px)',
+              borderRadius: 24,
+              objectFit: 'cover',
+              border: `2px solid ${FG}`,
+            }}
+          />
         </Link>
         <div className="editorial-masthead-meta" style={{
           display: 'flex',
