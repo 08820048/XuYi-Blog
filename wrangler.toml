@@ -10,6 +10,10 @@ port = 8788
 directory = ".open-next/assets"
 binding = "ASSETS"
 
+[triggers]
+# Cloudflare Cron 使用 UTC；这里对应北京时间 08:00、12:00、23:00。
+crons = ["0 0,4,15 * * *"]
+
 [ai]
 binding = "WORKERS_AI"
 
@@ -54,5 +58,7 @@ WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 # - ADMIN_TOKEN_SALT
 # - AI_CONFIG_ENCRYPTION_SECRET
 # - AI_API_KEY
+# - FEISHU_BOT_WEBHOOK (Feishu custom bot webhook)
+# - FEISHU_BOT_SECRET (optional, Feishu bot signature secret)
 # - CLOUDFLARE_ACCOUNT_ID (optional, for Workers AI model discovery)
 # - CLOUDFLARE_API_TOKEN (optional, for Workers AI model discovery)

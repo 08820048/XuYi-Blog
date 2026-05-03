@@ -71,6 +71,8 @@ declare interface CloudflareEnv {
   AI_BASE_URL?: string
   AI_MODEL?: string
   WORKERS_AI_MODEL?: string
+  FEISHU_BOT_WEBHOOK?: string
+  FEISHU_BOT_SECRET?: string
   CLOUDFLARE_ACCOUNT_ID?: string
   CLOUDFLARE_API_TOKEN?: string
   ENABLE_BACKGROUND_JOBS?: string

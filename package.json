@@ -95,6 +95,12 @@
       },
       "AI_API_KEY": {
         "description": "可选。外部 AI 服务的 API Key，用于文本生成或生图能力。"
+      },
+      "FEISHU_BOT_WEBHOOK": {
+        "description": "飞书自定义机器人 Webhook，用于每天 08:00、12:00、23:00 推送博客数据报告。"
+      },
+      "FEISHU_BOT_SECRET": {
+        "description": "可选。飞书自定义机器人签名密钥；机器人开启签名校验时填写。"
       }
     }
   }

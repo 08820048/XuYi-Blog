@@ -54,6 +54,25 @@ npx wrangler secret put AI_CONFIG_ENCRYPTION_SECRET -c wrangler.local.toml
 npx wrangler secret put AI_API_KEY -c wrangler.local.toml
 ```
 
+如需启用飞书机器人数据报告：
+
+```bash
+npx wrangler secret put FEISHU_BOT_WEBHOOK -c wrangler.local.toml
+```
+
+如果飞书自定义机器人开启了“签名校验”，继续设置：
+
+```bash
+npx wrangler secret put FEISHU_BOT_SECRET -c wrangler.local.toml
+```
+
+项目已配置 Cloudflare Cron Trigger，会在北京时间每天 08:00、12:00、23:00 推送一次。部署后也可以用管理员 Cookie 或 API Token 手动测试：
+
+```bash
+curl -X POST "https://your-domain.com/api/reports/feishu?dryRun=1" \
+  -H "Authorization: Bearer qm_your_api_token"
+```
+
 ### 5. 生成类型并部署
 
 ```bash
