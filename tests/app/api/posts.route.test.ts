@@ -2,17 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   createPost: vi.fn(),
+  getPostBySlug: vi.fn(),
   updatePostBySlug: vi.fn(),
   ensureAuthenticatedRequest: vi.fn(),
   getRouteContextWithDb: vi.fn(),
   parseJsonBody: vi.fn(),
   invalidatePublicContentCache: vi.fn(),
   enqueueBackgroundJob: vi.fn(),
+  enqueueFeishuNewPostNotification: vi.fn(),
   nanoid: vi.fn(() => 'abc123'),
 }))
 
 vi.mock('@/lib/db', () => ({
   createPost: mocks.createPost,
+  getPostBySlug: mocks.getPostBySlug,
   updatePostBySlug: mocks.updatePostBySlug,
 }))
 
@@ -30,6 +33,10 @@ vi.mock('@/lib/cache', () => ({
 
 vi.mock('@/lib/background-jobs', () => ({
   enqueueBackgroundJob: mocks.enqueueBackgroundJob,
+}))
+
+vi.mock('@/lib/feishu-report', () => ({
+  enqueueFeishuNewPostNotification: mocks.enqueueFeishuNewPostNotification,
 }))
 
 vi.mock('nanoid', () => ({
@@ -50,6 +57,7 @@ describe('/api/posts route', () => {
     mocks.ensureAuthenticatedRequest.mockResolvedValue(null)
     mocks.invalidatePublicContentCache.mockResolvedValue(undefined)
     mocks.enqueueBackgroundJob.mockResolvedValue(undefined)
+    mocks.getPostBySlug.mockResolvedValue(null)
   })
 
   it('creates a post with normalized payload fields and enqueues follow-up jobs', async () => {
@@ -117,6 +125,9 @@ describe('/api/posts route', () => {
       post_type: 'repost',
       source_url: 'https://example.com/source',
     })
+    mocks.getPostBySlug
+      .mockResolvedValueOnce({ status: 'draft' })
+      .mockResolvedValueOnce({ status: 'draft' })
 
     const response = await PATCH({} as never)
     const body = await response.json()
@@ -135,6 +146,7 @@ describe('/api/posts route', () => {
         source_url: 'https://example.com/source',
       }),
     )
+    expect(mocks.enqueueFeishuNewPostNotification).not.toHaveBeenCalled()
     expect(body).toEqual({ success: true, slug: 'new_slug' })
   })
 
