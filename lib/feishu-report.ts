@@ -45,6 +45,7 @@ type ReportSnapshot = {
 export interface BlogReport {
   generatedAt: Date
   generatedAtText: string
+  siteName: string
   momentLabel: string
   stats: {
     allPosts: number
@@ -69,6 +70,7 @@ export interface BlogReport {
 
 const SNAPSHOT_KEY = 'feishu_report_snapshot'
 const CHINA_TIME_OFFSET_SECONDS = 8 * 60 * 60
+const DEFAULT_REPORT_SITE_NAME = 'XuYi博客'
 
 function toNumber(value: number | null | undefined) {
   return typeof value === 'number' ? value : 0
@@ -107,6 +109,10 @@ function normalizeSiteUrl(siteUrl: string | undefined) {
   return (siteUrl || '').trim().replace(/\/+$/, '')
 }
 
+function normalizeSiteName(siteName: string | undefined) {
+  return siteName?.trim() || DEFAULT_REPORT_SITE_NAME
+}
+
 function buildPostUrl(siteUrl: string, slug: string) {
   return siteUrl ? `${siteUrl}/${slug}` : `/${slug}`
 }
@@ -138,7 +144,7 @@ function createSnapshot(report: BlogReport): ReportSnapshot {
 
 export async function collectBlogReport(
   db: Database,
-  env: Pick<FeishuReportEnv, 'NEXT_PUBLIC_SITE_URL'> = {},
+  env: Pick<FeishuReportEnv, 'NEXT_PUBLIC_SITE_URL' | 'NEXT_PUBLIC_SITE_NAME' | 'FEISHU_REPORT_SITE_NAME'> = {},
   now = new Date(),
 ): Promise<BlogReport> {
   await ensureSchema(db)
@@ -201,6 +207,7 @@ export async function collectBlogReport(
   return {
     generatedAt: now,
     generatedAtText: formatChinaTime(now),
+    siteName: normalizeSiteName(env.FEISHU_REPORT_SITE_NAME || env.NEXT_PUBLIC_SITE_NAME),
     momentLabel: getReportMomentLabel(now),
     stats: {
       allPosts: toNumber(statsRow?.all_posts),
@@ -241,7 +248,7 @@ function formatCategoryLine(category: ReportCategoryRow, index: number) {
 
 export function buildFeishuReportText(report: BlogReport) {
   const lines = [
-    `乔木博客数据报告｜${report.momentLabel}`,
+    `${report.siteName}数据报告｜${report.momentLabel}`,
     `时间：${report.generatedAtText}（北京时间）`,
     '',
     `公开文章：${report.stats.publicPosts} 篇（较上次 ${formatDelta(report.deltas.publicPosts)}）`,
@@ -355,7 +362,7 @@ export async function pushFeishuBlogReport(
   const now = options.now || new Date()
   const report = await collectBlogReport(env.DB, env, now)
   const text = buildFeishuReportText(report)
-  const payload = buildFeishuPostPayload(`乔木博客数据报告｜${report.momentLabel}`, text)
+  const payload = buildFeishuPostPayload(`${report.siteName}数据报告｜${report.momentLabel}`, text)
 
   if (options.dryRun) {
     return {

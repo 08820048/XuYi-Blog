@@ -11,6 +11,7 @@ function createReport(overrides: Partial<BlogReport> = {}): BlogReport {
   return {
     generatedAt: new Date('2026-05-03T00:00:00.000Z'),
     generatedAtText: '2026/05/03 08:00',
+    siteName: 'XuYi博客',
     momentLabel: '早报',
     stats: {
       allPosts: 12,
@@ -59,7 +60,7 @@ describe('feishu report helpers', () => {
   it('formats a readable blog report with deltas and post links', () => {
     const text = buildFeishuReportText(createReport())
 
-    expect(text).toContain('乔木博客数据报告｜早报')
+    expect(text).toContain('XuYi博客数据报告｜早报')
     expect(text).toContain('公开文章：10 篇（较上次 +1）')
     expect(text).toContain('累计浏览：3456 次（较上次 +88）')
     expect(text).toContain('今日新增：2 篇；今日更新：3 篇')
