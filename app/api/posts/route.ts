@@ -1,6 +1,7 @@
-import { createPost, updatePostBySlug } from '@/lib/db'
+import { createPost, getPostBySlug, updatePostBySlug } from '@/lib/db'
 import { invalidatePublicContentCache } from '@/lib/cache'
 import { enqueueBackgroundJob } from '@/lib/background-jobs'
+import { enqueueFeishuNewPostNotification } from '@/lib/feishu-report'
 import { nanoid } from 'nanoid'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
@@ -114,6 +115,13 @@ export async function POST(req: NextRequest) {
       },
     )
 
+    if (status === 'published') {
+      const createdPost = await getPostBySlug(db, slug)
+      if (createdPost) {
+        enqueueFeishuNewPostNotification(env, createdPost, ctx?.waitUntil?.bind(ctx))
+      }
+    }
+
     return jsonOk({
       success: true,
       slug,
@@ -139,7 +147,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const route = await getRouteContextWithDb('数据库未配置')
     if (!route.ok) return route.response
-    const { env, db } = route
+    const { env, db, ctx } = route
 
     const authError = await ensureAuthenticatedRequest(req, db)
     if (authError) return authError
@@ -189,10 +197,18 @@ export async function PATCH(req: NextRequest) {
       return jsonOk({ success: true, slug: currentSlug })
     }
 
+    const previousPost = await getPostBySlug(db, currentSlug)
     await updatePostBySlug(db, currentSlug, updates)
 
     // 清除缓存
     await invalidatePublicContentCache(env)
+
+    if (previousPost?.status !== 'published') {
+      const publishedPost = await getPostBySlug(db, nextSlug || currentSlug)
+      if (publishedPost?.status === 'published') {
+        enqueueFeishuNewPostNotification(env, publishedPost, ctx?.waitUntil?.bind(ctx))
+      }
+    }
 
     return jsonOk({ success: true, slug: nextSlug || currentSlug })
   } catch (error) {

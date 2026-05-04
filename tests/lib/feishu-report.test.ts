@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  buildFeishuNewPostText,
   buildFeishuPostPayload,
   buildFeishuReportText,
   createFeishuSign,
@@ -85,6 +86,33 @@ describe('feishu report helpers', () => {
         },
       },
     })
+  })
+
+  it('formats a new post notification with article metadata and site stats', () => {
+    const text = buildFeishuNewPostText(
+      {
+        title: '一篇新文章',
+        slug: 'new-post',
+        description: '这是摘要',
+        category: '技术',
+        tags: ['Next.js', 'Cloudflare'],
+        published_at: 1770000000,
+        view_count: 0,
+      },
+      {
+        siteName: 'XuYi博客',
+        siteUrl: 'https://blog.example.com',
+        generatedAtText: '2026/05/04 09:00',
+        publicPosts: 11,
+        totalViews: 3500,
+      },
+    )
+
+    expect(text).toContain('XuYi博客新文章发布')
+    expect(text).toContain('标题：一篇新文章')
+    expect(text).toContain('标签：Next.js、Cloudflare')
+    expect(text).toContain('链接：https://blog.example.com/new-post')
+    expect(text).toContain('当前公开文章：11 篇')
   })
 
   it('sends signed payloads when a Feishu bot secret is configured', async () => {

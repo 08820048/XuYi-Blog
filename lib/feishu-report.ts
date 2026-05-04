@@ -1,11 +1,17 @@
 import { ensureSchema, type Database } from '@/lib/repositories/schema'
 import { getSetting, setSetting } from '@/lib/repositories/settings'
+import type { PostWithTags } from '@/lib/repositories/types'
 
 export interface FeishuReportEnv extends Partial<CloudflareEnv> {
   DB: D1Database
 }
 
 export interface PushFeishuReportOptions {
+  now?: Date
+  dryRun?: boolean
+}
+
+export interface PushFeishuNewPostOptions {
   now?: Date
   dryRun?: boolean
 }
@@ -33,6 +39,11 @@ type ReportPostRow = {
 type ReportCategoryRow = {
   category: string | null
   count: number
+}
+
+type NewPostStatsRow = {
+  public_posts: number | null
+  total_views: number | null
 }
 
 type ReportSnapshot = {
@@ -113,8 +124,16 @@ function normalizeSiteName(siteName: string | undefined) {
   return siteName?.trim() || DEFAULT_REPORT_SITE_NAME
 }
 
+function getReportSiteName(env: Pick<FeishuReportEnv, 'NEXT_PUBLIC_SITE_NAME' | 'FEISHU_REPORT_SITE_NAME'>) {
+  return normalizeSiteName(env.FEISHU_REPORT_SITE_NAME || env.NEXT_PUBLIC_SITE_NAME)
+}
+
 function buildPostUrl(siteUrl: string, slug: string) {
   return siteUrl ? `${siteUrl}/${slug}` : `/${slug}`
+}
+
+function isPublicPost(post: Pick<PostWithTags, 'status' | 'password' | 'is_hidden' | 'deleted_at'>) {
+  return post.status === 'published' && !post.password && post.is_hidden === 0 && post.deleted_at == null
 }
 
 function parseSnapshot(value: string | null): ReportSnapshot | null {
@@ -207,7 +226,7 @@ export async function collectBlogReport(
   return {
     generatedAt: now,
     generatedAtText: formatChinaTime(now),
-    siteName: normalizeSiteName(env.FEISHU_REPORT_SITE_NAME || env.NEXT_PUBLIC_SITE_NAME),
+    siteName: getReportSiteName(env),
     momentLabel: getReportMomentLabel(now),
     stats: {
       allPosts: toNumber(statsRow?.all_posts),
@@ -287,6 +306,35 @@ export function buildFeishuPostPayload(title: string, text: string) {
       },
     },
   }
+}
+
+export function buildFeishuNewPostText(
+  post: Pick<PostWithTags, 'title' | 'slug' | 'description' | 'category' | 'tags' | 'published_at' | 'view_count'>,
+  context: {
+    siteName: string
+    siteUrl: string
+    generatedAtText: string
+    publicPosts: number
+    totalViews: number
+  },
+) {
+  const tags = post.tags.length > 0 ? post.tags.join('、') : '无'
+  const lines = [
+    `${context.siteName}新文章发布`,
+    `时间：${context.generatedAtText}（北京时间）`,
+    '',
+    `标题：${post.title}`,
+    `分类：${post.category || '未分类'}`,
+    `标签：${tags}`,
+    `摘要：${post.description?.trim() || '暂无摘要'}`,
+    `链接：${buildPostUrl(context.siteUrl, post.slug)}`,
+    '',
+    `当前公开文章：${context.publicPosts} 篇`,
+    `累计浏览：${context.totalViews} 次`,
+    `本文浏览：${post.view_count} 次`,
+  ]
+
+  return lines.join('\n')
 }
 
 function toBase64(bytes: ArrayBuffer) {
@@ -390,4 +438,81 @@ export async function pushFeishuBlogReport(
     report,
     feishuResponse,
   }
+}
+
+export async function pushFeishuNewPostNotification(
+  env: FeishuReportEnv,
+  post: PostWithTags,
+  options: PushFeishuNewPostOptions = {},
+) {
+  if (!isPublicPost(post)) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: 'post_not_public',
+    }
+  }
+
+  const now = options.now || new Date()
+  await ensureSchema(env.DB)
+
+  const statsRow = await env.DB
+    .prepare(
+      `SELECT
+        SUM(CASE WHEN status = 'published' AND password IS NULL AND is_hidden = 0 AND deleted_at IS NULL THEN 1 ELSE 0 END) AS public_posts,
+        COALESCE(SUM(CASE WHEN deleted_at IS NULL THEN view_count ELSE 0 END), 0) AS total_views
+       FROM posts`,
+    )
+    .first<NewPostStatsRow>()
+
+  const siteName = getReportSiteName(env)
+  const text = buildFeishuNewPostText(post, {
+    siteName,
+    siteUrl: normalizeSiteUrl(env.NEXT_PUBLIC_SITE_URL),
+    generatedAtText: formatChinaTime(now),
+    publicPosts: toNumber(statsRow?.public_posts),
+    totalViews: toNumber(statsRow?.total_views),
+  })
+  const payload = buildFeishuPostPayload(`${siteName}新文章｜${post.title}`, text)
+
+  if (options.dryRun) {
+    return {
+      sent: false,
+      dryRun: true,
+      text,
+      payload,
+    }
+  }
+
+  const webhook = env.FEISHU_BOT_WEBHOOK?.trim()
+  if (!webhook) {
+    throw new Error('缺少 FEISHU_BOT_WEBHOOK，无法推送飞书机器人。')
+  }
+
+  const feishuResponse = await sendFeishuWebhook(webhook, payload, env.FEISHU_BOT_SECRET, now)
+
+  return {
+    sent: true,
+    dryRun: false,
+    text,
+    payload,
+    feishuResponse,
+  }
+}
+
+export function enqueueFeishuNewPostNotification(
+  env: FeishuReportEnv,
+  post: PostWithTags,
+  waitUntil?: (promise: Promise<unknown>) => void,
+) {
+  const task = pushFeishuNewPostNotification(env, post).catch((error) => {
+    console.error('Feishu new post notification failed:', error)
+  })
+
+  if (waitUntil) {
+    waitUntil(task)
+    return
+  }
+
+  void task
 }

@@ -3,6 +3,7 @@ import { isAdminAuthenticated, COOKIE_NAME } from '@/lib/admin-auth'
 import { invalidatePublicContentCache } from '@/lib/cache'
 import { buildAutoDescription, normalizePostSlug } from '@/lib/post-utils'
 import { enqueueBackgroundJob } from '@/lib/background-jobs'
+import { enqueueFeishuNewPostNotification } from '@/lib/feishu-report'
 import { getRouteContextWithDb, jsonError, jsonOk, parseJsonBody } from '@/lib/server/route-helpers'
 import { normalizePostSourceUrl, normalizePostType, requiresSourceUrl } from '@/lib/post-type'
 import type { NextRequest } from 'next/server'
@@ -125,6 +126,13 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
         waitUntil: ctx?.waitUntil?.bind(ctx),
       },
     )
+
+    if (post.status !== 'published') {
+      const publishedPost = await getPostBySlug(db, nextSlug || slug)
+      if (publishedPost?.status === 'published') {
+        enqueueFeishuNewPostNotification(env, publishedPost, ctx?.waitUntil?.bind(ctx))
+      }
+    }
 
     return jsonOk({ success: true, slug: nextSlug || slug })
   } catch (err) {
