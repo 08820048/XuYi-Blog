@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { getCategoryPath } from '@/lib/route-segments'
 import type { SiteCategoryLink, SiteNavLink } from '@/lib/site'
 import { getSiteHeaderData } from '@/lib/site'
 import type { Theme } from '@/lib/appearance'
@@ -137,7 +138,7 @@ export default async function SearchPage({
                             const categorySlug = post.category ? categorySlugMap.get(post.category) : null
                             return categorySlug ? (
                               <Link
-                                href={`/category/${categorySlug}`}
+                                href={getCategoryPath(categorySlug)}
                                 className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15 hover:bg-[var(--editor-accent)]/12 transition-colors"
                               >
                                 {post.category}

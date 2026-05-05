@@ -5,6 +5,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Pagination } from '@/components/Pagination'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { getCategoryPath } from '@/lib/route-segments'
 import type { HomeProps } from '@/components/HomeClient'
 
 function formatDate(ts: number) {
@@ -84,7 +85,7 @@ export function HomeDefault({
                               const slug = categorySlugMap[post.category]
                               return slug ? (
                                 <Link
-                                  href={`/category/${slug}`}
+                                  href={getCategoryPath(slug)}
                                   className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15 hover:bg-[var(--editor-accent)]/12 transition-colors"
                                 >
                                   {post.category}

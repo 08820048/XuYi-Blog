@@ -7,6 +7,7 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { SearchEntry } from './SearchEntry'
 import { ThemeDropdown } from '@/components/ThemeDropdown'
 import { getClientThemePreference, subscribeToThemeChange, type Theme } from '@/lib/appearance'
+import { getCategoryPath } from '@/lib/route-segments'
 import type { SiteCategoryLink, SiteNavLink } from '@/lib/site'
 
 export type NavLink = SiteNavLink
@@ -225,7 +226,7 @@ export function SiteHeader({
                       {categories.map(cat => (
                         <Link
                           key={cat.slug}
-                          href={`/category/${cat.slug}`}
+                          href={getCategoryPath(cat.slug)}
                           onClick={() => setCategoryOpen(false)}
                           className={`block px-3 py-2 text-sm transition-colors ${
                             activeCategorySlug === cat.slug
@@ -287,7 +288,7 @@ export function SiteHeader({
                 {categories.map((category) => (
                   <Link
                     key={category.slug}
-                    href={`/category/${category.slug}`}
+                    href={getCategoryPath(category.slug)}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeCategorySlug === category.slug

@@ -15,6 +15,7 @@ import { MathRenderEnhancer } from '@/components/MathRenderEnhancer'
 import { getSiteHeaderData } from '@/lib/site'
 import { getRelatedPosts } from '@/lib/related-content'
 import { getPublicContentCacheNamespace } from '@/lib/cache'
+import { getCategoryPath } from '@/lib/route-segments'
 import { getSiteUrl } from '@/lib/site-config'
 
 // Cloudflare Workers 缓存策略
@@ -221,7 +222,7 @@ export default async function PostPage({
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: '首页', item: baseUrl },
               ...(post.category && activeCategorySlug
-                ? [{ '@type': 'ListItem', position: 2, name: post.category, item: `${baseUrl}/category/${activeCategorySlug}` }]
+                ? [{ '@type': 'ListItem', position: 2, name: post.category, item: `${baseUrl}${getCategoryPath(activeCategorySlug)}` }]
                 : []),
               { '@type': 'ListItem', position: post.category ? 3 : 2, name: post.title, item: `${baseUrl}/${post.slug}` },
             ],
@@ -258,7 +259,7 @@ export default async function PostPage({
                   <>
                     {activeCategorySlug ? (
                       <Link
-                        href={`/category/${activeCategorySlug}`}
+                        href={getCategoryPath(activeCategorySlug)}
                         className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15 hover:bg-[var(--editor-accent)]/12 transition-colors"
                       >
                         {post.category}

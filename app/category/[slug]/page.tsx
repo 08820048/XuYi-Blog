@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Pagination } from '@/components/Pagination'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { decodeRouteSegment, getCategoryPath } from '@/lib/route-segments'
 import { getSiteHeaderData } from '@/lib/site'
 import { getSiteUrl } from '@/lib/site-config'
 
@@ -28,7 +29,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeRouteSegment(rawSlug)
 
   try {
     const env = await getAppCloudflareEnv()
@@ -41,7 +43,7 @@ export async function generateMetadata({
     return {
       title: `${category.name}`,
       alternates: {
-        canonical: `${BASE_URL}/category/${slug}`,
+        canonical: `${BASE_URL}${getCategoryPath(category.slug)}`,
       },
     }
   } catch {
@@ -56,7 +58,8 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>
   searchParams: Promise<{ page?: string }>
 }) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeRouteSegment(rawSlug)
   const { page: pageStr } = await searchParams
   const currentPage = Math.max(1, parseInt(pageStr ?? '1', 10) || 1)
 
@@ -144,7 +147,7 @@ export default async function CategoryPage({
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              basePath={`/category/${slug}`}
+              basePath={getCategoryPath(category.slug)}
             />
           </>
         )}

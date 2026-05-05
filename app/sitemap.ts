@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getAppCloudflareEnv } from '@/lib/cloudflare'
 import { getPosts, getPublicCategories } from '@/lib/db'
+import { getCategoryPath } from '@/lib/route-segments'
 import { getSiteUrl } from '@/lib/site-config'
 
 export const dynamic = 'force-dynamic'
@@ -33,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const category of categories) {
         if (category.slug && category.name !== '未分类') {
           entries.push({
-            url: `${baseUrl}/category/${category.slug}`,
+            url: `${baseUrl}${getCategoryPath(category.slug)}`,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.6,
