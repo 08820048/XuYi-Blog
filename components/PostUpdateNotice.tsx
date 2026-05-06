@@ -26,7 +26,10 @@ export function PostUpdateNotice({
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {diff.added.length > 0 && (
             <div>
-              <div className="mb-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">新增 / 调整</div>
+              <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono text-sm leading-none">+</span>
+                <span>新增 / 调整</span>
+              </div>
               <ul className="space-y-2">
                 {diff.added.map((item, index) => (
                   <li key={`${index}:${item}`} className="border-l-2 border-emerald-500/45 pl-3 leading-relaxed text-[var(--editor-muted)]">
@@ -38,10 +41,13 @@ export function PostUpdateNotice({
           )}
           {diff.removed.length > 0 && (
             <div>
-              <div className="mb-2 text-xs font-semibold text-[var(--stone-gray)]">上一版中移除</div>
+              <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
+                <span className="font-mono text-sm leading-none">-</span>
+                <span>上一版移除</span>
+              </div>
               <ul className="space-y-2">
                 {diff.removed.map((item, index) => (
-                  <li key={`${index}:${item}`} className="border-l-2 border-[var(--editor-line)] pl-3 leading-relaxed text-[var(--stone-gray)] line-through decoration-[var(--stone-gray)]/50">
+                  <li key={`${index}:${item}`} className="border-l-2 border-red-500/45 pl-3 leading-relaxed text-[var(--stone-gray)] line-through decoration-[var(--stone-gray)]/50">
                     {item}
                   </li>
                 ))}
