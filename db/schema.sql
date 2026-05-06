@@ -15,6 +15,9 @@ CREATE TABLE posts (
   cover_image TEXT, -- 封面图 URL
   post_type TEXT NOT NULL DEFAULT 'original' CHECK(post_type IN ('original', 'repost', 'translation')), -- 文章类型
   source_url TEXT, -- 转载/翻译原文地址
+  previous_content TEXT, -- 上一次公开正文快照，用于展示更新差异
+  previous_html TEXT, -- 上一次公开 HTML 快照
+  content_updated_at INTEGER, -- 公开正文最近一次更新时间戳
   deleted_at INTEGER, -- 软删除时间戳，NULL 表示未删除
   published_at INTEGER DEFAULT (strftime('%s', 'now')),
   updated_at INTEGER DEFAULT (strftime('%s', 'now')),

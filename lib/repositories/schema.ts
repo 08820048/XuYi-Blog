@@ -24,6 +24,9 @@ export async function ensureSchema(db: Database) {
       "ALTER TABLE posts ADD COLUMN cover_image TEXT",
       "ALTER TABLE posts ADD COLUMN post_type TEXT NOT NULL DEFAULT 'original' CHECK(post_type IN ('original', 'repost', 'translation'))",
       "ALTER TABLE posts ADD COLUMN source_url TEXT",
+      "ALTER TABLE posts ADD COLUMN previous_content TEXT",
+      "ALTER TABLE posts ADD COLUMN previous_html TEXT",
+      "ALTER TABLE posts ADD COLUMN content_updated_at INTEGER",
     ]
     for (const sql of columnMigrations) {
       try {

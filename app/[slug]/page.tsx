@@ -9,6 +9,8 @@ import { FrontPostAdminBoundary } from '@/components/FrontPostAdminBoundary'
 import { PasswordPrompt } from '@/components/PasswordPrompt'
 import { DownloadMarkdown } from '@/components/DownloadMarkdown'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { PostUpdateBadge } from '@/components/PostUpdateBadge'
+import { PostUpdateNotice } from '@/components/PostUpdateNotice'
 import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { CodeHighlightEnhancer } from '@/components/CodeHighlightEnhancer'
 import { MathRenderEnhancer } from '@/components/MathRenderEnhancer'
@@ -255,6 +257,7 @@ export default async function PostPage({
               </h1>
               <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--stone-gray)]">
                 <PostTypeBadge type={post.post_type} />
+                <PostUpdateBadge post={post} />
                 {post.category && (
                   <>
                     {activeCategorySlug ? (
@@ -299,6 +302,8 @@ export default async function PostPage({
                 </div>
               )}
             </header>
+
+            <PostUpdateNotice post={post} />
 
             <div
               id={contentContainerId}

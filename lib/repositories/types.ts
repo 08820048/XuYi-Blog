@@ -16,6 +16,9 @@ export interface Post {
   cover_image: string | null
   post_type: PostType
   source_url: string | null
+  previous_content: string | null
+  previous_html: string | null
+  content_updated_at: number | null
   deleted_at: number | null
   published_at: number
   updated_at: number

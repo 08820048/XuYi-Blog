@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Pagination } from '@/components/Pagination'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { PostUpdateBadge } from '@/components/PostUpdateBadge'
 import { decodeRouteSegment, getCategoryPath } from '@/lib/route-segments'
 import { getSiteHeaderData } from '@/lib/site'
 import { getSiteUrl } from '@/lib/site-config'
@@ -126,6 +127,7 @@ export default async function CategoryPage({
                     <h2 className="flex flex-wrap items-center gap-2 text-xl sm:text-2xl font-bold text-[var(--editor-ink)] leading-snug mb-2 group-hover:text-[var(--editor-accent)] transition-colors duration-200">
                       {post.title}
                       <PostTypeBadge type={post.post_type} />
+                      <PostUpdateBadge post={post} />
                     </h2>
                     {post.description ? (
                       <p className="text-sm text-[var(--editor-muted)] leading-relaxed line-clamp-2 mb-2.5">

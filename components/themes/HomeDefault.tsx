@@ -5,6 +5,7 @@ import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { Pagination } from '@/components/Pagination'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
+import { PostUpdateBadge } from '@/components/PostUpdateBadge'
 import { getCategoryPath } from '@/lib/route-segments'
 import type { HomeProps } from '@/components/HomeClient'
 
@@ -58,6 +59,7 @@ export function HomeDefault({
                       >
                         {post.title}
                         <PostTypeBadge type={post.post_type} />
+                        <PostUpdateBadge post={post} />
                         {post.password && (
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--editor-muted)] flex-shrink-0">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>

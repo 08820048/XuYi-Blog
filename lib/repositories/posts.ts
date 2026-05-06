@@ -38,7 +38,7 @@ export async function getPosts(
 
   const { results } = await db
     .prepare(
-      `SELECT id, slug, title, description, category, tags, status, password, is_pinned, is_hidden, cover_image, post_type, source_url, published_at, view_count
+      `SELECT id, slug, title, description, category, tags, status, password, is_pinned, is_hidden, cover_image, post_type, source_url, content_updated_at, published_at, updated_at, view_count
        , deleted_at
        FROM posts
        ${where}
@@ -230,14 +230,16 @@ export async function updatePost(
 ): Promise<void> {
   await ensureSchema(db)
 
-  let oldCategory: string | null = null
-  if (data.category !== undefined) {
-    const post = await db
-      .prepare('SELECT category, deleted_at FROM posts WHERE id = ?')
-      .bind(id)
-      .first<PostCategoryRow>()
-    oldCategory = post?.category || null
+  const currentPost = await db
+    .prepare('SELECT category, deleted_at, status, content, html, previous_content, previous_html, content_updated_at FROM posts WHERE id = ?')
+    .bind(id)
+    .first<Pick<Post, 'category' | 'deleted_at' | 'status' | 'content' | 'html' | 'previous_content' | 'previous_html' | 'content_updated_at'>>()
+
+  if (!currentPost) {
+    throw new Error('文章不存在')
   }
+
+  const oldCategory = data.category !== undefined ? currentPost.category || null : null
 
   const updates: string[] = []
   const values: unknown[] = []
@@ -305,6 +307,21 @@ export async function updatePost(
   }
 
   if (updates.length === 0) return
+
+  const contentChanged =
+    (data.content !== undefined && data.content !== currentPost.content) ||
+    (data.html !== undefined && data.html !== currentPost.html)
+  const nextStatus = data.status ?? currentPost.status
+
+  if (contentChanged && currentPost.status === 'published' && nextStatus === 'published' && currentPost.deleted_at == null) {
+    if (!currentPost.previous_content && !currentPost.previous_html && !currentPost.content_updated_at) {
+      updates.push('previous_content = ?')
+      values.push(currentPost.content)
+      updates.push('previous_html = ?')
+      values.push(currentPost.html)
+    }
+    updates.push("content_updated_at = strftime('%s', 'now')")
+  }
 
   updates.push("updated_at = strftime('%s', 'now')")
   values.push(id)
@@ -418,7 +435,7 @@ export async function getPostsByCategory(
 ): Promise<PostWithTags[]> {
   const { results } = await db
     .prepare(
-      `SELECT id, slug, title, description, category, tags, status, password, is_pinned, is_hidden, cover_image, post_type, source_url, deleted_at, published_at, view_count
+      `SELECT id, slug, title, description, category, tags, status, password, is_pinned, is_hidden, cover_image, post_type, source_url, content_updated_at, deleted_at, published_at, updated_at, view_count
        FROM posts
        WHERE category = ?
          AND status = 'published'
