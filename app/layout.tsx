@@ -47,6 +47,7 @@ const geistMono = localFont({
 });
 
 const SITE_URL = getSiteUrl()
+const ICON_VERSION = '20260506'
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrlObject(),
@@ -57,15 +58,15 @@ export const metadata: Metadata = {
   description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: `/favicon.ico?v=${ICON_VERSION}`, sizes: 'any' },
+      { url: `/icon-192.png?v=${ICON_VERSION}`, sizes: '192x192', type: 'image/png' },
+      { url: `/icon-512.png?v=${ICON_VERSION}`, sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: `/apple-touch-icon.png?v=${ICON_VERSION}`, sizes: '180x180', type: 'image/png' },
     ],
   },
-  manifest: '/manifest.json',
+  manifest: `/manifest.json?v=${ICON_VERSION}`,
   alternates: {
     types: {
       'application/rss+xml': '/feed.xml',
