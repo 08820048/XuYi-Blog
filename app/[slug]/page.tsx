@@ -10,7 +10,6 @@ import { PasswordPrompt } from '@/components/PasswordPrompt'
 import { DownloadMarkdown } from '@/components/DownloadMarkdown'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
 import { PostUpdateBadge } from '@/components/PostUpdateBadge'
-import { PostUpdateDiffView } from '@/components/PostUpdateDiffView'
 import { PostUpdateNotice } from '@/components/PostUpdateNotice'
 import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { CodeHighlightEnhancer } from '@/components/CodeHighlightEnhancer'
@@ -305,7 +304,6 @@ export default async function PostPage({
             </header>
 
             <PostUpdateNotice post={post} />
-            <PostUpdateDiffView post={post} />
 
             <div
               id={contentContainerId}
