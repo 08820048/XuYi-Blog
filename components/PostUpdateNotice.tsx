@@ -15,7 +15,7 @@ export function PostUpdateNotice({
       </span>
       <span>更新于 {formatPostUpdateDate(post.content_updated_at)}</span>
       <span aria-hidden>·</span>
-      <span className="font-mono text-[11px]">+ 新增 / - 删除 / D 更新前 / U 更新后</span>
+      <span className="font-mono text-[11px]">下方展示 GitHub 风格更新 diff</span>
     </section>
   )
 }

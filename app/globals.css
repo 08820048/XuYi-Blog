@@ -664,91 +664,134 @@ body {
   font-family: var(--body-font, inherit);
 }
 
-.rich-content .post-update-diff-block {
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
+.post-update-file-diff {
+  overflow: hidden;
   border: 1px solid var(--editor-line);
-  border-left-width: 3px;
   border-radius: 8px;
-  padding: 0.75rem 0.9rem 0.75rem 0.7rem;
-  background: color-mix(in srgb, var(--editor-panel) 72%, transparent);
+  background: var(--editor-panel);
+  box-shadow: 0 14px 34px rgba(20, 20, 19, 0.06);
 }
 
-.rich-content .post-update-diff-sign {
-  display: inline-flex;
-  width: 1.55rem;
-  height: 1.55rem;
+.post-update-file-diff__header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--editor-line);
+  background: color-mix(in srgb, var(--editor-panel) 78%, var(--editor-soft));
+  padding: 0.75rem 0.9rem;
+}
+
+.post-update-file-diff__path {
+  overflow: hidden;
+  color: var(--editor-ink);
   font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
   font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.rich-content .post-update-diff-body {
+.post-update-file-diff__summary,
+.post-update-file-diff__legend {
+  color: var(--stone-gray);
+  font-size: 0.72rem;
+}
+
+.post-update-file-diff__legend {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.65rem;
+  font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+}
+
+.post-update-file-diff__legend-add {
+  color: #1a7f37;
+}
+
+.post-update-file-diff__legend-remove {
+  color: #cf222e;
+}
+
+.post-update-file-diff__body {
+  overflow-x: auto;
+}
+
+.post-update-file-diff table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.post-update-file-diff__hunk td {
+  border-top: 1px solid color-mix(in srgb, #0969da 12%, var(--editor-line));
+  border-bottom: 1px solid color-mix(in srgb, #0969da 12%, var(--editor-line));
+  background: color-mix(in srgb, #0969da 9%, var(--editor-panel));
+  color: #57606a;
+  padding: 0.38rem 0.65rem;
+}
+
+.post-update-file-diff__line-num {
+  width: 3.1rem;
+  border-right: 1px solid color-mix(in srgb, var(--editor-line) 78%, transparent);
+  color: var(--stone-gray);
+  padding: 0 0.55rem;
+  text-align: right;
+  user-select: none;
+  vertical-align: top;
+}
+
+.post-update-file-diff__marker {
+  width: 1.65rem;
+  color: var(--stone-gray);
+  padding: 0;
+  text-align: center;
+  user-select: none;
+  vertical-align: top;
+}
+
+.post-update-file-diff__code {
   min-width: 0;
+  padding: 0 0.8rem 0 0.1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
 
-.rich-content .post-update-diff-body > :first-child {
-  margin-top: 0;
+.post-update-file-diff__row--added {
+  background: color-mix(in srgb, #2da44e 14%, var(--editor-panel));
 }
 
-.rich-content .post-update-diff-body > :last-child {
-  margin-bottom: 0;
+.post-update-file-diff__row--added .post-update-file-diff__line-num,
+.post-update-file-diff__row--added .post-update-file-diff__marker {
+  background: color-mix(in srgb, #2da44e 20%, var(--editor-panel));
+  color: #1a7f37;
 }
 
-.rich-content .post-update-diff-block--added {
-  border-left-color: #16a34a;
-  background: color-mix(in srgb, #16a34a 8%, var(--editor-panel));
+.post-update-file-diff__row--removed {
+  background: color-mix(in srgb, #cf222e 11%, var(--editor-panel));
 }
 
-.rich-content .post-update-diff-block--added .post-update-diff-sign {
-  background: color-mix(in srgb, #16a34a 16%, transparent);
-  color: #15803d;
+.post-update-file-diff__row--removed .post-update-file-diff__line-num,
+.post-update-file-diff__row--removed .post-update-file-diff__marker {
+  background: color-mix(in srgb, #cf222e 17%, var(--editor-panel));
+  color: #cf222e;
 }
 
-.rich-content .post-update-diff-block--removed {
-  border-left-color: #dc2626;
-  background: color-mix(in srgb, #dc2626 7%, var(--editor-panel));
+.post-update-file-diff__word {
+  border-radius: 3px;
+  padding: 0.08rem 0.03rem;
 }
 
-.rich-content .post-update-diff-block--removed .post-update-diff-sign {
-  background: color-mix(in srgb, #dc2626 14%, transparent);
-  color: #b91c1c;
+.post-update-file-diff__word--added {
+  background: color-mix(in srgb, #2da44e 32%, transparent);
 }
 
-.rich-content .post-update-diff-block--removed .post-update-diff-body {
-  color: var(--stone-gray);
-  text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--stone-gray) 58%, transparent);
-}
-
-.rich-content .post-update-diff-block--before {
-  border-left-color: #a16207;
-  background: color-mix(in srgb, #a16207 7%, var(--editor-panel));
-}
-
-.rich-content .post-update-diff-block--before .post-update-diff-sign {
-  background: color-mix(in srgb, #a16207 14%, transparent);
-  color: #854d0e;
-}
-
-.rich-content .post-update-diff-block--before .post-update-diff-body {
-  color: var(--stone-gray);
-}
-
-.rich-content .post-update-diff-block--after {
-  border-left-color: #0d9488;
-  background: color-mix(in srgb, #0d9488 8%, var(--editor-panel));
-}
-
-.rich-content .post-update-diff-block--after .post-update-diff-sign {
-  background: color-mix(in srgb, #0d9488 16%, transparent);
-  color: #0f766e;
+.post-update-file-diff__word--removed {
+  background: color-mix(in srgb, #cf222e 26%, transparent);
 }
 
 .article-display-title {

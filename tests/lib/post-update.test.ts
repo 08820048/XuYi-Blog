@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPostUpdateDiff, createPostUpdateDiffHtml, hasPostUpdate } from '@/lib/post-update'
+import { createPostUpdateDiff, createPostUpdateLineDiff, hasPostUpdate } from '@/lib/post-update'
 
 describe('post update helpers', () => {
   it('marks posts as updated only after publish time', () => {
@@ -25,31 +25,35 @@ describe('post update helpers', () => {
     expect(diff.removed).toEqual([])
   })
 
-  it('renders inline diff markers for inserted, deleted, and updated html blocks', () => {
-    const html = createPostUpdateDiffHtml(
-      '<p>第一段</p><p>旧段落</p><p>被删除</p><p>最后一段</p>',
-      '<p>第一段</p><p>新段落</p><p>最后一段</p><p>新增段落</p>',
+  it('creates GitHub-style hunks with line numbers and context', () => {
+    const hunks = createPostUpdateLineDiff(
+      '第一段\n旧段落\n被删除\n最后一段',
+      '第一段\n新段落\n最后一段\n新增段落',
+      1,
     )
 
-    expect(html).toContain('<p>第一段</p>')
-    expect(html).toContain('data-diff-marker="D"')
-    expect(html).toContain('<p>旧段落</p>')
-    expect(html).toContain('data-diff-marker="U"')
-    expect(html).toContain('<p>新段落</p>')
-    expect(html).toContain('data-diff-marker="-"')
-    expect(html).toContain('<p>被删除</p>')
-    expect(html).toContain('data-diff-marker="+"')
-    expect(html).toContain('<p>新增段落</p>')
+    expect(hunks).toHaveLength(1)
+    expect(hunks[0].rows.map((row) => row.type)).toEqual([
+      'context',
+      'removed',
+      'removed',
+      'added',
+      'context',
+      'added',
+    ])
+    expect(hunks[0].rows[1]).toMatchObject({ oldLine: 2, newLine: null, text: '旧段落' })
+    expect(hunks[0].rows[3]).toMatchObject({ oldLine: null, newLine: 2, text: '新段落' })
   })
 
-  it('keeps unchanged code blocks aligned by text content', () => {
-    const code = '<pre><code>const a = 1</code></pre>'
-    const html = createPostUpdateDiffHtml(
-      `<p>前言</p>${code}`,
-      `<p>更新前言</p>${code}`,
+  it('adds word-level inline highlights for replacement lines', () => {
+    const hunks = createPostUpdateLineDiff(
+      '使用 OpenAI 生成短摘要',
+      '使用 OpenAI 生成文章摘要',
     )
+    const removed = hunks[0].rows.find((row) => row.type === 'removed')
+    const added = hunks[0].rows.find((row) => row.type === 'added')
 
-    expect(html).toContain(code)
-    expect(html.match(/data-diff-marker=/g)?.length).toBe(2)
+    expect(removed?.inline?.some((part) => part.type === 'removed' && part.text.includes('短'))).toBe(true)
+    expect(added?.inline?.some((part) => part.type === 'added' && part.text.includes('文章'))).toBe(true)
   })
 })

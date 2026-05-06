@@ -2,34 +2,38 @@ import type { PostWithTags } from '@/lib/repositories/types'
 
 type UpdateFields = Pick<PostWithTags, 'published_at' | 'content_updated_at'>
 
-type HtmlBlock = {
-  html: string
-  key: string
-}
-
-type DiffMarker = '+' | '-' | 'D' | 'U'
-
 export type PostUpdateDiff = {
   added: string[]
   removed: string[]
 }
 
-const VOID_TAGS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-])
+export type InlineDiffPart = {
+  type: 'same' | 'added' | 'removed'
+  text: string
+}
+
+export type PostUpdateDiffRow = {
+  type: 'context' | 'added' | 'removed'
+  oldLine: number | null
+  newLine: number | null
+  text: string
+  inline?: InlineDiffPart[]
+}
+
+export type PostUpdateDiffHunk = {
+  oldStart: number
+  oldLines: number
+  newStart: number
+  newLines: number
+  rows: PostUpdateDiffRow[]
+}
+
+type LineOp =
+  | { type: 'equal'; oldLine: number; newLine: number; text: string }
+  | { type: 'delete'; oldLine: number; text: string }
+  | { type: 'insert'; newLine: number; text: string }
+
+const DEFAULT_CONTEXT_LINES = 3
 
 function normalizeBlock(block: string) {
   return block.replace(/\s+/g, ' ').trim()
@@ -48,112 +52,23 @@ function compactSnippet(text: string, maxLength = 150) {
   return `${text.slice(0, maxLength).trim()}...`
 }
 
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+function splitLines(text: string | null | undefined) {
+  return (text || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
 }
 
-function decodeHtmlEntities(text: string) {
-  return text
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#(\d+);/g, (_match, code) => String.fromCharCode(Number(code)))
+function normalizeLineForDiff(line: string) {
+  return line.replace(/\s+/g, ' ').trim()
 }
 
-function htmlToText(html: string) {
-  return decodeHtmlEntities(
-    html
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, '')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<[^>]+>/g, ' '),
-  )
-}
+function buildLcsTable<T>(left: T[], right: T[], isEqual: (left: T, right: T) => boolean) {
+  const table = Array.from({ length: left.length + 1 }, () => Array(right.length + 1).fill(0) as number[])
 
-function getBlockKey(html: string) {
-  return normalizeBlock(htmlToText(html)) || normalizeBlock(html)
-}
-
-function splitTopLevelHtml(html: string): HtmlBlock[] {
-  const blocks: HtmlBlock[] = []
-  const tagPattern = /<!--[\s\S]*?-->|<\/?([a-zA-Z][\w:-]*)(?:\s[^<>]*?)?>/g
-  let depth = 0
-  let blockStart = -1
-  let lastClosed = 0
-  let match: RegExpExecArray | null
-
-  while ((match = tagPattern.exec(html)) !== null) {
-    const token = match[0]
-    const tagName = match[1]?.toLowerCase()
-
-    if (!tagName) continue
-
-    if (depth === 0 && match.index > lastClosed) {
-      const text = html.slice(lastClosed, match.index)
-      if (text.trim()) {
-        const escaped = escapeHtml(text)
-        blocks.push({ html: escaped, key: getBlockKey(escaped) })
-      }
-    }
-
-    const isClosing = token.startsWith('</')
-    const isSelfClosing = token.endsWith('/>') || VOID_TAGS.has(tagName)
-
-    if (isClosing) {
-      if (depth > 0) depth -= 1
-
-      if (depth === 0 && blockStart >= 0) {
-        const blockHtml = html.slice(blockStart, tagPattern.lastIndex)
-        blocks.push({ html: blockHtml, key: getBlockKey(blockHtml) })
-        blockStart = -1
-        lastClosed = tagPattern.lastIndex
-      }
-      continue
-    }
-
-    if (depth === 0) blockStart = match.index
-
-    if (!isSelfClosing) {
-      depth += 1
-      continue
-    }
-
-    if (depth === 0) {
-      const blockHtml = html.slice(match.index, tagPattern.lastIndex)
-      blocks.push({ html: blockHtml, key: getBlockKey(blockHtml) })
-      blockStart = -1
-      lastClosed = tagPattern.lastIndex
-    }
-  }
-
-  if (depth === 0 && lastClosed < html.length) {
-    const text = html.slice(lastClosed)
-    if (text.trim()) {
-      const escaped = escapeHtml(text)
-      blocks.push({ html: escaped, key: getBlockKey(escaped) })
-    }
-  }
-
-  if (blocks.length === 0 && html.trim()) {
-    return [{ html, key: getBlockKey(html) }]
-  }
-
-  return blocks
-}
-
-function buildLcsTable(previous: HtmlBlock[], current: HtmlBlock[]) {
-  const table = Array.from({ length: previous.length + 1 }, () => Array(current.length + 1).fill(0) as number[])
-
-  for (let i = previous.length - 1; i >= 0; i -= 1) {
-    for (let j = current.length - 1; j >= 0; j -= 1) {
-      table[i][j] = previous[i].key === current[j].key
+  for (let i = left.length - 1; i >= 0; i -= 1) {
+    for (let j = right.length - 1; j >= 0; j -= 1) {
+      table[i][j] = isEqual(left[i], right[j])
         ? table[i + 1][j + 1] + 1
         : Math.max(table[i + 1][j], table[i][j + 1])
     }
@@ -162,43 +77,131 @@ function buildLcsTable(previous: HtmlBlock[], current: HtmlBlock[]) {
   return table
 }
 
-function renderMarkedBlock(marker: DiffMarker, html: string) {
-  const label = marker === '+'
-    ? '新增'
-    : marker === '-'
-      ? '删除'
-      : marker === 'D'
-        ? '更新前'
-        : '更新后'
-  const variant = marker === '+'
-    ? 'added'
-    : marker === '-'
-      ? 'removed'
-      : marker === 'D'
-        ? 'before'
-        : 'after'
+function createLineOps(previousLines: string[], currentLines: string[]) {
+  const normalizedPrevious = previousLines.map(normalizeLineForDiff)
+  const normalizedCurrent = currentLines.map(normalizeLineForDiff)
+  const table = buildLcsTable(normalizedPrevious, normalizedCurrent, (left, right) => left === right)
+  const ops: LineOp[] = []
+  let i = 0
+  let j = 0
 
-  return `<div class="post-update-diff-block post-update-diff-block--${variant}" data-diff-marker="${marker}"><span class="post-update-diff-sign" aria-label="${label}">${marker}</span><div class="post-update-diff-body">${html}</div></div>`
-}
+  while (i < previousLines.length || j < currentLines.length) {
+    if (i < previousLines.length && j < currentLines.length && normalizedPrevious[i] === normalizedCurrent[j]) {
+      ops.push({ type: 'equal', oldLine: i + 1, newLine: j + 1, text: currentLines[j] })
+      i += 1
+      j += 1
+      continue
+    }
 
-function renderChangeGroup(deleted: HtmlBlock[], inserted: HtmlBlock[]) {
-  const html: string[] = []
-  const paired = Math.min(deleted.length, inserted.length)
-
-  for (let index = 0; index < paired; index += 1) {
-    html.push(renderMarkedBlock('D', deleted[index].html))
-    html.push(renderMarkedBlock('U', inserted[index].html))
+    if (j >= currentLines.length || (i < previousLines.length && table[i + 1][j] >= table[i][j + 1])) {
+      ops.push({ type: 'delete', oldLine: i + 1, text: previousLines[i] })
+      i += 1
+    } else {
+      ops.push({ type: 'insert', newLine: j + 1, text: currentLines[j] })
+      j += 1
+    }
   }
 
-  deleted.slice(paired).forEach((block) => {
-    html.push(renderMarkedBlock('-', block.html))
-  })
+  return ops
+}
 
-  inserted.slice(paired).forEach((block) => {
-    html.push(renderMarkedBlock('+', block.html))
-  })
+function tokenizeInline(text: string) {
+  return text.match(/(\s+|[\u4e00-\u9fff]|[A-Za-z0-9_]+|[^\sA-Za-z0-9_\u4e00-\u9fff]+)/g) ?? []
+}
 
-  return html.join('')
+function createInlineDiffParts(
+  previousText: string,
+  currentText: string,
+): { removed: InlineDiffPart[]; added: InlineDiffPart[] } {
+  const previous = tokenizeInline(previousText)
+  const current = tokenizeInline(currentText)
+  const table = buildLcsTable(previous, current, (left, right) => left === right)
+  const removed: InlineDiffPart[] = []
+  const added: InlineDiffPart[] = []
+  let i = 0
+  let j = 0
+
+  const pushPart = (target: InlineDiffPart[], type: InlineDiffPart['type'], text: string) => {
+    const last = target[target.length - 1]
+    if (last?.type === type) {
+      last.text += text
+    } else {
+      target.push({ type, text })
+    }
+  }
+
+  while (i < previous.length || j < current.length) {
+    if (i < previous.length && j < current.length && previous[i] === current[j]) {
+      pushPart(removed, 'same', previous[i])
+      pushPart(added, 'same', current[j])
+      i += 1
+      j += 1
+      continue
+    }
+
+    if (j >= current.length || (i < previous.length && table[i + 1][j] >= table[i][j + 1])) {
+      pushPart(removed, 'removed', previous[i])
+      i += 1
+    } else {
+      pushPart(added, 'added', current[j])
+      j += 1
+    }
+  }
+
+  return { removed, added }
+}
+
+function pairChangedRows(rows: PostUpdateDiffRow[]) {
+  let index = 0
+
+  while (index < rows.length) {
+    if (rows[index].type !== 'removed') {
+      index += 1
+      continue
+    }
+
+    const removedStart = index
+    while (index < rows.length && rows[index].type === 'removed') index += 1
+    const addedStart = index
+    while (index < rows.length && rows[index].type === 'added') index += 1
+
+    const removedRows = rows.slice(removedStart, addedStart)
+    const addedRows = rows.slice(addedStart, index)
+    const paired = Math.min(removedRows.length, addedRows.length)
+
+    for (let pairIndex = 0; pairIndex < paired; pairIndex += 1) {
+      const inline = createInlineDiffParts(removedRows[pairIndex].text, addedRows[pairIndex].text)
+      removedRows[pairIndex].inline = inline.removed
+      addedRows[pairIndex].inline = inline.added
+    }
+  }
+}
+
+function opsToRows(ops: LineOp[]) {
+  return ops.map((op): PostUpdateDiffRow => {
+    if (op.type === 'equal') {
+      return { type: 'context', oldLine: op.oldLine, newLine: op.newLine, text: op.text }
+    }
+    if (op.type === 'delete') {
+      return { type: 'removed', oldLine: op.oldLine, newLine: null, text: op.text }
+    }
+    return { type: 'added', oldLine: null, newLine: op.newLine, text: op.text }
+  })
+}
+
+function createHunk(rows: PostUpdateDiffRow[]) {
+  const oldLines = rows.filter((row) => row.type !== 'added')
+  const newLines = rows.filter((row) => row.type !== 'removed')
+  const oldStart = oldLines[0]?.oldLine ?? 0
+  const newStart = newLines[0]?.newLine ?? 0
+
+  return {
+    oldStart,
+    oldLines: oldLines.length,
+    newStart,
+    newLines: newLines.length,
+    rows,
+  } satisfies PostUpdateDiffHunk
 }
 
 export function hasPostUpdate(post: UpdateFields) {
@@ -235,44 +238,34 @@ export function createPostUpdateDiff(
   }
 }
 
-export function createPostUpdateDiffHtml(
-  previousHtml: string | null | undefined,
-  currentHtml: string,
+export function createPostUpdateLineDiff(
+  previousContent: string | null | undefined,
+  currentContent: string | null | undefined,
+  contextLines = DEFAULT_CONTEXT_LINES,
 ) {
-  if (!previousHtml?.trim()) return currentHtml
+  const previousLines = splitLines(previousContent)
+  const currentLines = splitLines(currentContent)
+  const rows = opsToRows(createLineOps(previousLines, currentLines))
+  pairChangedRows(rows)
 
-  const previous = splitTopLevelHtml(previousHtml)
-  const current = splitTopLevelHtml(currentHtml)
-  const table = buildLcsTable(previous, current)
-  const html: string[] = []
-  let i = 0
-  let j = 0
+  const changedIndexes = rows
+    .map((row, index) => (row.type === 'context' ? -1 : index))
+    .filter((index) => index >= 0)
 
-  while (i < previous.length || j < current.length) {
-    if (i < previous.length && j < current.length && previous[i].key === current[j].key) {
-      html.push(current[j].html)
-      i += 1
-      j += 1
-      continue
+  if (changedIndexes.length === 0) return []
+
+  const ranges: Array<{ start: number; end: number }> = []
+  for (const index of changedIndexes) {
+    const start = Math.max(0, index - contextLines)
+    const end = Math.min(rows.length - 1, index + contextLines)
+    const previous = ranges[ranges.length - 1]
+
+    if (previous && start <= previous.end + 1) {
+      previous.end = Math.max(previous.end, end)
+    } else {
+      ranges.push({ start, end })
     }
-
-    const deleted: HtmlBlock[] = []
-    const inserted: HtmlBlock[] = []
-
-    while (i < previous.length || j < current.length) {
-      if (i < previous.length && j < current.length && previous[i].key === current[j].key) break
-
-      if (j >= current.length || (i < previous.length && table[i + 1][j] >= table[i][j + 1])) {
-        deleted.push(previous[i])
-        i += 1
-      } else {
-        inserted.push(current[j])
-        j += 1
-      }
-    }
-
-    html.push(renderChangeGroup(deleted, inserted))
   }
 
-  return html.join('')
+  return ranges.map((range) => createHunk(rows.slice(range.start, range.end + 1)))
 }

@@ -10,6 +10,7 @@ import { PasswordPrompt } from '@/components/PasswordPrompt'
 import { DownloadMarkdown } from '@/components/DownloadMarkdown'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
 import { PostUpdateBadge } from '@/components/PostUpdateBadge'
+import { PostUpdateDiffView } from '@/components/PostUpdateDiffView'
 import { PostUpdateNotice } from '@/components/PostUpdateNotice'
 import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { CodeHighlightEnhancer } from '@/components/CodeHighlightEnhancer'
@@ -19,7 +20,6 @@ import { getRelatedPosts } from '@/lib/related-content'
 import { getPublicContentCacheNamespace } from '@/lib/cache'
 import { getCategoryPath } from '@/lib/route-segments'
 import { getSiteUrl } from '@/lib/site-config'
-import { createPostUpdateDiffHtml, hasPostUpdate } from '@/lib/post-update'
 
 // Cloudflare Workers 缓存策略
 export const revalidate = 86400 // 24小时缓存
@@ -189,9 +189,6 @@ export default async function PostPage({
     ? await getRelatedPosts(db, env, post, 3).catch(() => ({ strategy: 'fts' as const, source: 'rules' as const, results: [] }))
     : { strategy: 'fts' as const, source: 'rules' as const, results: [] }
   const contentContainerId = `post-content-${post.slug}`
-  const displayHtml = hasPostUpdate(post)
-    ? createPostUpdateDiffHtml(post.previous_html, post.html)
-    : post.html
 
   return (
     <div className="min-h-screen bg-[var(--background)] flex flex-col">
@@ -308,16 +305,17 @@ export default async function PostPage({
             </header>
 
             <PostUpdateNotice post={post} />
+            <PostUpdateDiffView post={post} />
 
             <div
               id={contentContainerId}
               data-admin-edit-trigger
               className="rich-content"
-              dangerouslySetInnerHTML={{ __html: displayHtml }}
+              dangerouslySetInnerHTML={{ __html: post.html }}
             />
-            <CodeHighlightEnhancer containerId={contentContainerId} html={displayHtml} />
-            <MathRenderEnhancer containerId={contentContainerId} html={displayHtml} />
-            <TwitterEmbedsEnhancer containerId={contentContainerId} html={displayHtml} />
+            <CodeHighlightEnhancer containerId={contentContainerId} html={post.html} />
+            <MathRenderEnhancer containerId={contentContainerId} html={post.html} />
+            <TwitterEmbedsEnhancer containerId={contentContainerId} html={post.html} />
 
             {related.results.length > 0 && (
               <section className="mt-14 sm:mt-16 border-t border-[var(--editor-line)] pt-8 sm:pt-10">
