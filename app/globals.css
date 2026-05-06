@@ -664,6 +664,93 @@ body {
   font-family: var(--body-font, inherit);
 }
 
+.rich-content .post-update-diff-block {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  border: 1px solid var(--editor-line);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem 0.75rem 0.7rem;
+  background: color-mix(in srgb, var(--editor-panel) 72%, transparent);
+}
+
+.rich-content .post-update-diff-sign {
+  display: inline-flex;
+  width: 1.55rem;
+  height: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rich-content .post-update-diff-body {
+  min-width: 0;
+}
+
+.rich-content .post-update-diff-body > :first-child {
+  margin-top: 0;
+}
+
+.rich-content .post-update-diff-body > :last-child {
+  margin-bottom: 0;
+}
+
+.rich-content .post-update-diff-block--added {
+  border-left-color: #16a34a;
+  background: color-mix(in srgb, #16a34a 8%, var(--editor-panel));
+}
+
+.rich-content .post-update-diff-block--added .post-update-diff-sign {
+  background: color-mix(in srgb, #16a34a 16%, transparent);
+  color: #15803d;
+}
+
+.rich-content .post-update-diff-block--removed {
+  border-left-color: #dc2626;
+  background: color-mix(in srgb, #dc2626 7%, var(--editor-panel));
+}
+
+.rich-content .post-update-diff-block--removed .post-update-diff-sign {
+  background: color-mix(in srgb, #dc2626 14%, transparent);
+  color: #b91c1c;
+}
+
+.rich-content .post-update-diff-block--removed .post-update-diff-body {
+  color: var(--stone-gray);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--stone-gray) 58%, transparent);
+}
+
+.rich-content .post-update-diff-block--before {
+  border-left-color: #a16207;
+  background: color-mix(in srgb, #a16207 7%, var(--editor-panel));
+}
+
+.rich-content .post-update-diff-block--before .post-update-diff-sign {
+  background: color-mix(in srgb, #a16207 14%, transparent);
+  color: #854d0e;
+}
+
+.rich-content .post-update-diff-block--before .post-update-diff-body {
+  color: var(--stone-gray);
+}
+
+.rich-content .post-update-diff-block--after {
+  border-left-color: #0d9488;
+  background: color-mix(in srgb, #0d9488 8%, var(--editor-panel));
+}
+
+.rich-content .post-update-diff-block--after .post-update-diff-sign {
+  background: color-mix(in srgb, #0d9488 16%, transparent);
+  color: #0f766e;
+}
+
 .article-display-title {
   font-family: var(--body-font, Georgia, "Noto Serif SC", serif);
 }

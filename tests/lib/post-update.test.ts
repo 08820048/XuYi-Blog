@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPostUpdateDiff, hasPostUpdate } from '@/lib/post-update'
+import { createPostUpdateDiff, createPostUpdateDiffHtml, hasPostUpdate } from '@/lib/post-update'
 
 describe('post update helpers', () => {
   it('marks posts as updated only after publish time', () => {
@@ -23,5 +23,33 @@ describe('post update helpers', () => {
 
     expect(diff.added).toEqual([])
     expect(diff.removed).toEqual([])
+  })
+
+  it('renders inline diff markers for inserted, deleted, and updated html blocks', () => {
+    const html = createPostUpdateDiffHtml(
+      '<p>第一段</p><p>旧段落</p><p>被删除</p><p>最后一段</p>',
+      '<p>第一段</p><p>新段落</p><p>最后一段</p><p>新增段落</p>',
+    )
+
+    expect(html).toContain('<p>第一段</p>')
+    expect(html).toContain('data-diff-marker="D"')
+    expect(html).toContain('<p>旧段落</p>')
+    expect(html).toContain('data-diff-marker="U"')
+    expect(html).toContain('<p>新段落</p>')
+    expect(html).toContain('data-diff-marker="-"')
+    expect(html).toContain('<p>被删除</p>')
+    expect(html).toContain('data-diff-marker="+"')
+    expect(html).toContain('<p>新增段落</p>')
+  })
+
+  it('keeps unchanged code blocks aligned by text content', () => {
+    const code = '<pre><code>const a = 1</code></pre>'
+    const html = createPostUpdateDiffHtml(
+      `<p>前言</p>${code}`,
+      `<p>更新前言</p>${code}`,
+    )
+
+    expect(html).toContain(code)
+    expect(html.match(/data-diff-marker=/g)?.length).toBe(2)
   })
 })
