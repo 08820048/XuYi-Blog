@@ -46,6 +46,8 @@ export function RouteTransitionIndicator() {
   const [state, setState] = useState<TransitionState>('idle')
   const lastUrlKeyRef = useRef(currentUrlKey)
   const hideTimerRef = useRef<number | null>(null)
+  const fallbackTimerRef = useRef<number | null>(null)
+  const activeRef = useRef(false)
 
   useEffect(() => {
     const clearHideTimer = () => {
@@ -55,9 +57,41 @@ export function RouteTransitionIndicator() {
       }
     }
 
-    const start = () => {
+    const clearFallbackTimer = () => {
+      if (fallbackTimerRef.current !== null) {
+        window.clearTimeout(fallbackTimerRef.current)
+        fallbackTimerRef.current = null
+      }
+    }
+
+    const complete = () => {
+      if (!activeRef.current) return
+
+      activeRef.current = false
+      clearFallbackTimer()
+      setState('done')
       clearHideTimer()
+      hideTimerRef.current = window.setTimeout(() => {
+        setState('idle')
+        hideTimerRef.current = null
+      }, 260)
+    }
+
+    const reset = () => {
+      activeRef.current = false
+      clearHideTimer()
+      clearFallbackTimer()
+      setState('idle')
+    }
+
+    const start = () => {
+      activeRef.current = true
+      clearHideTimer()
+      clearFallbackTimer()
       setState('loading')
+      fallbackTimerRef.current = window.setTimeout(() => {
+        complete()
+      }, 2500)
     }
 
     const handleClick = (event: MouseEvent) => {
@@ -70,17 +104,32 @@ export function RouteTransitionIndicator() {
 
       start()
     }
-    const handlePageShow = () => setState('idle')
+    const handlePageRestore = () => reset()
+    const handleFocus = () => {
+      window.setTimeout(() => complete(), 0)
+    }
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        window.setTimeout(() => complete(), 0)
+      }
+    }
 
     document.addEventListener('click', handleClick, { capture: true })
     window.addEventListener('popstate', start)
-    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('pageshow', handlePageRestore)
+    window.addEventListener('pagehide', handlePageRestore)
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearHideTimer()
+      clearFallbackTimer()
       document.removeEventListener('click', handleClick, { capture: true })
       window.removeEventListener('popstate', start)
-      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('pageshow', handlePageRestore)
+      window.removeEventListener('pagehide', handlePageRestore)
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
 
@@ -90,8 +139,18 @@ export function RouteTransitionIndicator() {
     lastUrlKeyRef.current = currentUrlKey
     if (state === 'idle') return
 
+    activeRef.current = false
+
+    if (fallbackTimerRef.current !== null) {
+      window.clearTimeout(fallbackTimerRef.current)
+      fallbackTimerRef.current = null
+    }
+
     const completeTimer = window.setTimeout(() => {
-      setState('done')
+      setState((current) => (current === 'idle' ? current : 'done'))
+      if (hideTimerRef.current !== null) {
+        window.clearTimeout(hideTimerRef.current)
+      }
       hideTimerRef.current = window.setTimeout(() => {
         setState('idle')
         hideTimerRef.current = null
