@@ -11,6 +11,7 @@ import { DownloadMarkdown } from '@/components/DownloadMarkdown'
 import { PostTypeBadge } from '@/components/PostTypeBadge'
 import { PostUpdateBadge } from '@/components/PostUpdateBadge'
 import { PostUpdateNotice } from '@/components/PostUpdateNotice'
+import { PostUpdateSeenMarker } from '@/components/PostUpdateSeenMarker'
 import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { CodeHighlightEnhancer } from '@/components/CodeHighlightEnhancer'
 import { MathRenderEnhancer } from '@/components/MathRenderEnhancer'
@@ -248,6 +249,7 @@ export default async function PostPage({
           content={post.content}
         >
           <article>
+            <PostUpdateSeenMarker post={post} />
             <header className="mb-10 sm:mb-12">
               <h1
                 data-admin-edit-trigger
