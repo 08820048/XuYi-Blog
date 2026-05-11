@@ -12,6 +12,7 @@ import { PostTypeBadge } from '@/components/PostTypeBadge'
 import { PostUpdateBadge } from '@/components/PostUpdateBadge'
 import { PostUpdateNotice } from '@/components/PostUpdateNotice'
 import { PostUpdateSeenMarker } from '@/components/PostUpdateSeenMarker'
+import { ArticleTableOfContents } from '@/components/ArticleTableOfContents'
 import { TwitterEmbedsEnhancer } from '@/components/TwitterEmbedsEnhancer'
 import { CodeHighlightEnhancer } from '@/components/CodeHighlightEnhancer'
 import { MathRenderEnhancer } from '@/components/MathRenderEnhancer'
@@ -201,7 +202,7 @@ export default async function PostPage({
         forceSpread
       />
 
-      <main className="page-main mx-auto w-full max-w-3xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
+      <main className="page-main mx-auto w-full max-w-6xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
         {!post.password && (() => {
           const baseUrl = getSiteUrl()
           const imgMatch = post.html?.match(/<img[^>]+src="([^"]+)"/)
@@ -237,139 +238,147 @@ export default async function PostPage({
             </>
           )
         })()}
-        <FrontPostAdminBoundary
-          slug={post.slug}
-          title={post.title}
-          html={post.html}
-          category={post.category}
-          coverImage={post.cover_image}
-          password={post.password}
-          publishedAt={post.published_at}
-          viewCount={post.view_count}
-          content={post.content}
-        >
-          <article>
-            <PostUpdateSeenMarker post={post} />
-            <header className="mb-10 sm:mb-12">
-              <h1
-                data-admin-edit-trigger
-                className="article-display-title text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--editor-ink)] leading-snug mb-4 sm:mb-5"
-              >
-                {post.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--stone-gray)]">
-                <PostTypeBadge type={post.post_type} />
-                <PostUpdateBadge post={post} />
-                {post.category && (
-                  <>
-                    {activeCategorySlug ? (
-                      <Link
-                        href={getCategoryPath(activeCategorySlug)}
-                        className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15 hover:bg-[var(--editor-accent)]/12 transition-colors"
-                      >
-                        {post.category}
-                      </Link>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15">
-                        {post.category}
-                      </span>
-                    )}
-                    <span aria-hidden>·</span>
-                  </>
-                )}
-                <time>
-                  {new Date(post.published_at * 1000).toLocaleDateString('zh-CN', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </time>
-                <span aria-hidden>·</span>
-                <span>{post.view_count} 次阅读</span>
-                <span aria-hidden>·</span>
-                <span>约 {readingMinutes} 分钟</span>
-                <DownloadMarkdown title={post.title} html={post.html} />
-              </div>
-              {post.source_url && post.post_type !== 'original' && (
-                <div className="mt-4 rounded-lg border border-[var(--editor-line)] bg-[var(--editor-panel)]/60 px-3 py-2 text-sm text-[var(--editor-muted)]">
-                  原文地址：
-                  <a
-                    href={post.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="break-all text-[var(--editor-accent)] underline underline-offset-2 hover:opacity-80"
+        <div className="lg:grid lg:grid-cols-[minmax(0,48rem)_13.5rem] lg:items-start lg:gap-10 xl:gap-14">
+          <div className="mx-auto min-w-0 max-w-3xl lg:mx-0">
+            <FrontPostAdminBoundary
+              slug={post.slug}
+              title={post.title}
+              html={post.html}
+              category={post.category}
+              coverImage={post.cover_image}
+              password={post.password}
+              publishedAt={post.published_at}
+              viewCount={post.view_count}
+              content={post.content}
+            >
+              <article>
+                <PostUpdateSeenMarker post={post} />
+                <header className="mb-10 sm:mb-12">
+                  <h1
+                    data-admin-edit-trigger
+                    className="article-display-title text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--editor-ink)] leading-snug mb-4 sm:mb-5"
                   >
-                    {post.source_url}
-                  </a>
-                </div>
-              )}
-            </header>
-
-            <PostUpdateNotice post={post} />
-
-            <div
-              id={contentContainerId}
-              data-admin-edit-trigger
-              className="rich-content"
-              dangerouslySetInnerHTML={{ __html: post.html }}
-            />
-            <CodeHighlightEnhancer containerId={contentContainerId} html={post.html} />
-            <MathRenderEnhancer containerId={contentContainerId} html={post.html} />
-            <TwitterEmbedsEnhancer containerId={contentContainerId} html={post.html} />
-
-            {related.results.length > 0 && (
-              <section className="mt-14 sm:mt-16 border-t border-[var(--editor-line)] pt-8 sm:pt-10">
-                <div className="flex items-center justify-between gap-3 mb-5">
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-[var(--editor-ink)]">继续阅读</h2>
-                    <p className="text-xs text-[var(--stone-gray)] mt-1">
-                      {related.source === 'vectorize' ? '基于向量召回' : '基于全文检索与主题相似度'}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {related.results.map((item) => {
-                    const itemCategorySlug = item.category ? categorySlugMap.get(item.category) : null
-                    return (
-                      <Link
-                        key={item.slug}
-                        href={`/${item.slug}`}
-                        className="group rounded-2xl border border-[var(--editor-line)] bg-[var(--editor-panel)]/55 p-4 transition-colors hover:border-[var(--editor-accent)]/35 hover:bg-[var(--editor-panel)]"
-                      >
-                        <div className="text-xs text-[var(--stone-gray)] mb-3 flex items-center gap-2 flex-wrap">
-                          {item.category && (
-                            itemCategorySlug ? (
-                              <span className="rounded-full border border-[var(--editor-accent)]/15 bg-[var(--editor-accent)]/8 px-2 py-0.5 text-[var(--editor-accent)]">
-                                {item.category}
-                              </span>
-                            ) : (
-                              <span>{item.category}</span>
-                            )
-                          )}
-                          <time>
-                            {new Date(item.published_at * 1000).toLocaleDateString('zh-CN', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </time>
-                        </div>
-                        <h3 className="text-base font-semibold leading-snug text-[var(--editor-ink)] group-hover:text-[var(--editor-accent)] transition-colors">
-                          {item.title}
-                        </h3>
-                        {item.description && (
-                          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[var(--editor-muted)]">
-                            {item.description}
-                          </p>
+                    {post.title}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--stone-gray)]">
+                    <PostTypeBadge type={post.post_type} />
+                    <PostUpdateBadge post={post} />
+                    {post.category && (
+                      <>
+                        {activeCategorySlug ? (
+                          <Link
+                            href={getCategoryPath(activeCategorySlug)}
+                            className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15 hover:bg-[var(--editor-accent)]/12 transition-colors"
+                          >
+                            {post.category}
+                          </Link>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-[var(--editor-accent)]/8 text-[var(--editor-accent)] font-medium border border-[var(--editor-accent)]/15">
+                            {post.category}
+                          </span>
                         )}
-                      </Link>
-                    )
-                  })}
-                </div>
-              </section>
-            )}
-          </article>
-        </FrontPostAdminBoundary>
+                        <span aria-hidden>·</span>
+                      </>
+                    )}
+                    <time>
+                      {new Date(post.published_at * 1000).toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </time>
+                    <span aria-hidden>·</span>
+                    <span>{post.view_count} 次阅读</span>
+                    <span aria-hidden>·</span>
+                    <span>约 {readingMinutes} 分钟</span>
+                    <DownloadMarkdown title={post.title} html={post.html} />
+                  </div>
+                  {post.source_url && post.post_type !== 'original' && (
+                    <div className="mt-4 rounded-lg border border-[var(--editor-line)] bg-[var(--editor-panel)]/60 px-3 py-2 text-sm text-[var(--editor-muted)]">
+                      原文地址：
+                      <a
+                        href={post.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="break-all text-[var(--editor-accent)] underline underline-offset-2 hover:opacity-80"
+                      >
+                        {post.source_url}
+                      </a>
+                    </div>
+                  )}
+                </header>
+
+                <PostUpdateNotice post={post} />
+
+                <div
+                  id={contentContainerId}
+                  data-admin-edit-trigger
+                  className="rich-content"
+                  dangerouslySetInnerHTML={{ __html: post.html }}
+                />
+                <CodeHighlightEnhancer containerId={contentContainerId} html={post.html} />
+                <MathRenderEnhancer containerId={contentContainerId} html={post.html} />
+                <TwitterEmbedsEnhancer containerId={contentContainerId} html={post.html} />
+
+                {related.results.length > 0 && (
+                  <section className="mt-14 sm:mt-16 border-t border-[var(--editor-line)] pt-8 sm:pt-10">
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                      <div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-[var(--editor-ink)]">继续阅读</h2>
+                        <p className="text-xs text-[var(--stone-gray)] mt-1">
+                          {related.source === 'vectorize' ? '基于向量召回' : '基于全文检索与主题相似度'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {related.results.map((item) => {
+                        const itemCategorySlug = item.category ? categorySlugMap.get(item.category) : null
+                        return (
+                          <Link
+                            key={item.slug}
+                            href={`/${item.slug}`}
+                            className="group rounded-2xl border border-[var(--editor-line)] bg-[var(--editor-panel)]/55 p-4 transition-colors hover:border-[var(--editor-accent)]/35 hover:bg-[var(--editor-panel)]"
+                          >
+                            <div className="text-xs text-[var(--stone-gray)] mb-3 flex items-center gap-2 flex-wrap">
+                              {item.category && (
+                                itemCategorySlug ? (
+                                  <span className="rounded-full border border-[var(--editor-accent)]/15 bg-[var(--editor-accent)]/8 px-2 py-0.5 text-[var(--editor-accent)]">
+                                    {item.category}
+                                  </span>
+                                ) : (
+                                  <span>{item.category}</span>
+                                )
+                              )}
+                              <time>
+                                {new Date(item.published_at * 1000).toLocaleDateString('zh-CN', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </time>
+                            </div>
+                            <h3 className="text-base font-semibold leading-snug text-[var(--editor-ink)] group-hover:text-[var(--editor-accent)] transition-colors">
+                              {item.title}
+                            </h3>
+                            {item.description && (
+                              <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[var(--editor-muted)]">
+                                {item.description}
+                              </p>
+                            )}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
+              </article>
+            </FrontPostAdminBoundary>
+          </div>
+
+          <div className="hidden lg:block">
+            <ArticleTableOfContents containerId={contentContainerId} />
+          </div>
+        </div>
       </main>
 
       <SiteFooter />
