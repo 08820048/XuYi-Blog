@@ -38,7 +38,7 @@ if ! rg -q 'NEXT_PUBLIC_SITE_URL[[:space:]]*=[[:space:]]*"https?://[^"]+"' "${CO
   exit 1
 fi
 
-if rg -q 'NEXT_PUBLIC_SITE_URL[[:space:]]*=[[:space:]]*"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|example\.com)(:[0-9]+)?/?\"' "${CONFIG_PATH}"; then
+if rg -q 'NEXT_PUBLIC_SITE_URL[[:space:]]*=[[:space:]]*"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|example\.com|your-domain\.com)(:[0-9]+)?/?\"' "${CONFIG_PATH}"; then
   echo "❌ NEXT_PUBLIC_SITE_URL points to a local or placeholder host in ${CONFIG_PATH}" >&2
   exit 1
 fi

@@ -82,6 +82,7 @@ export interface BlogReport {
 const SNAPSHOT_KEY = 'feishu_report_snapshot'
 const CHINA_TIME_OFFSET_SECONDS = 8 * 60 * 60
 const DEFAULT_REPORT_SITE_NAME = 'XuYi博客'
+const DEFAULT_REPORT_SITE_URL = 'https://xuyi.dev'
 
 function toNumber(value: number | null | undefined) {
   return typeof value === 'number' ? value : 0
@@ -116,8 +117,33 @@ function getReportMomentLabel(date: Date) {
   return '手动报告'
 }
 
+function isPlaceholderSiteUrl(url: URL) {
+  const hostname = url.hostname.toLowerCase()
+  return hostname === 'your-domain.com'
+    || hostname === 'example.com'
+    || hostname.endsWith('.example.com')
+    || hostname === 'localhost'
+    || hostname === '127.0.0.1'
+    || hostname === '0.0.0.0'
+}
+
 function normalizeSiteUrl(siteUrl: string | undefined) {
-  return (siteUrl || '').trim().replace(/\/+$/, '')
+  const normalized = (siteUrl || '').trim()
+  if (!normalized) return DEFAULT_REPORT_SITE_URL
+
+  try {
+    const url = new URL(normalized)
+    if (isPlaceholderSiteUrl(url)) return DEFAULT_REPORT_SITE_URL
+    return url.toString().replace(/\/+$/, '')
+  } catch {
+    try {
+      const url = new URL(`https://${normalized}`)
+      if (isPlaceholderSiteUrl(url)) return DEFAULT_REPORT_SITE_URL
+      return url.toString().replace(/\/+$/, '')
+    } catch {
+      return DEFAULT_REPORT_SITE_URL
+    }
+  }
 }
 
 function normalizeSiteName(siteName: string | undefined) {
