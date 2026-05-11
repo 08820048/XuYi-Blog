@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface HeadingItem {
   id: string
@@ -30,6 +30,7 @@ function getHeadingLevel(tagName: string): HeadingItem['level'] {
 }
 
 export function ArticleTableOfContents({ containerId }: ArticleTableOfContentsProps) {
+  const tocRef = useRef<HTMLElement>(null)
   const [headings, setHeadings] = useState<HeadingItem[]>([])
   const [activeId, setActiveId] = useState('')
 
@@ -112,12 +113,25 @@ export function ArticleTableOfContents({ containerId }: ArticleTableOfContentsPr
     }
   }, [containerId])
 
+  useEffect(() => {
+    if (!activeId || !tocRef.current) return
+
+    const activeLink = Array.from(
+      tocRef.current.querySelectorAll<HTMLAnchorElement>('.article-toc__link'),
+    ).find((link) => link.dataset.headingId === activeId)
+
+    activeLink?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }, [activeId])
+
   const visibleHeadings = useMemo(() => headings.filter((heading) => heading.text), [headings])
 
   if (visibleHeadings.length < 2) return null
 
   return (
-    <aside className="article-toc" aria-label="文章目录">
+    <aside ref={tocRef} className="article-toc" aria-label="文章目录">
       <div className="article-toc__label">目录</div>
       <nav className="article-toc__nav">
         {visibleHeadings.map((heading) => {
@@ -129,6 +143,7 @@ export function ArticleTableOfContents({ containerId }: ArticleTableOfContentsPr
               className="article-toc__link"
               data-level={heading.level}
               data-active={isActive ? 'true' : undefined}
+              data-heading-id={heading.id}
             >
               <span className="article-toc__rule" aria-hidden />
               <span className="article-toc__text">{heading.text}</span>

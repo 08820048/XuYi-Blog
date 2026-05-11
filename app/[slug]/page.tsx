@@ -202,7 +202,7 @@ export default async function PostPage({
         forceSpread
       />
 
-      <main className="page-main mx-auto w-full max-w-6xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
+      <main className="page-main mx-auto w-full max-w-3xl px-4 sm:px-6 flex-1 py-8 sm:py-12">
         {!post.password && (() => {
           const baseUrl = getSiteUrl()
           const imgMatch = post.html?.match(/<img[^>]+src="([^"]+)"/)
@@ -238,8 +238,7 @@ export default async function PostPage({
             </>
           )
         })()}
-        <div className="lg:grid lg:grid-cols-[minmax(0,48rem)_13.5rem] lg:items-start lg:gap-10 xl:gap-14">
-          <div className="mx-auto min-w-0 max-w-3xl lg:mx-0">
+        <div className="relative">
             <FrontPostAdminBoundary
               slug={post.slug}
               title={post.title}
@@ -373,9 +372,8 @@ export default async function PostPage({
                 )}
               </article>
             </FrontPostAdminBoundary>
-          </div>
 
-          <div className="hidden lg:block">
+          <div className="article-toc-dock">
             <ArticleTableOfContents containerId={contentContainerId} />
           </div>
         </div>
